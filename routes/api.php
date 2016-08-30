@@ -13,6 +13,6 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
+Route::get('/', function (Request $request) {
+    return response()->json(['status' => 'ok']);
 })->middleware('auth:api');
