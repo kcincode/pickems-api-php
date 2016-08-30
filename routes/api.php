@@ -15,4 +15,4 @@ use Illuminate\Http\Request;
 
 Route::get('/', function (Request $request) {
     return response()->json(['status' => 'ok']);
-})->middleware('auth:api');
+});//->middleware('auth:api');
