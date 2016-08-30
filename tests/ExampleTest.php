@@ -13,7 +13,7 @@ class ExampleTest extends TestCase
      */
     public function testBasicExample()
     {
-        $this->visit('/')
-             ->see('Laravel');
+        $this->json('GET', '/api')
+            ->seeJson(['status' => 'ok']);
     }
 }
