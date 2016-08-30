@@ -1,0 +1,18 @@
+language: php
+php:
+- 5.6
+- 7.0
+before_script:
+- cp .env.travis .env
+- mysql -e 'create database homestead_test;'
+- composer self-update
+- composer install --no-interaction
+script:
+- vendor/bin/phpunit
+deploy:
+  provider: heroku
+  api_key:
+    secure: Cm+ol3kgBsYJAhiNnjPETaZ9njsSVUrXkakQkgmtlg4rgKO+o6nxrVca+uPi6+VpyiM9wT1XlU5MTRUHhs9QaKPMJ3uTavA63IZDhnelbY45eAWRsaU1bgBYKmlrjvA+UAN2ds+s8x4GxpSw+A0U7ftrFkolh15mVLvytjFSl7+mnX6BBNF5rcd2XN5fx54knRRij3aP86xYn15Hgs1AnlE2CtjeVeIJzwAPO0QqFMlqNG87v1V3u+IWkELqUdJXdlCj54DhEzxkXGOnSgG3NHDwK2XKpL5YSQWalkjKwMqEFT1o7ZByzLVTc5lxatFPwSi7Uo9OaM0J40QceCvmCbJ8e1I72FD/D5V29yiw9QiH2wdHTMFIiETX7F2MH9hDWCWHGdC6+s5/ZK9StbzGwcixNfruUiHX28397luZPE4gbLX1iHlB2O/gXROq0S0BUHUPKT8mqMFQ0tm2Z/agNhnLUGfMQc0dcgJQ3STGjUiFLHaMe5imAKt5x0CYQfRXIdT1jL2gFWR5ui+4l4CKVp/2cpcGIDO94vAuJYNJzw5R4/GKOFdtH1ften2BGCXOLStngTnwE5vQPqLfd76lpB/8+ZVMAiICstqK9lRERFBdr01oQIL9m8KTSGM1M6e4yOF1WadF96jefyvqN2Cto6k/DCVlaaeBGMJmOo/+6a8=
+  app: pickems-fb
+  on:
+    repo: kcin1018/pickems-api
