@@ -2,6 +2,7 @@
 
 namespace Pickems\Http\Requests;
 
+use Gate;
 use JWTAuth;
 
 class UserRequest extends JsonApiRequest
@@ -18,9 +19,7 @@ class UserRequest extends JsonApiRequest
             return true;
         }
 
-        // dd(JWTAuth::parseToken()->authenticate());
-
-        return Gate::allows($this->method(), JWTAuth::parseToken()->authenticate());
+        return Gate::allows(strtolower($this->method()), $this->route('user'));
     }
 
     /**
@@ -42,9 +41,9 @@ class UserRequest extends JsonApiRequest
             case 'PATCH':
                 return [
                     'data.type' => 'required|in:users',
-                    'data.id' => 'required|number',
-                    'data.attributes.email' => 'email|unique:users,email,'.$this->route('user'),
-                    'data.attributes.name' => 'min:1',
+                    'data.id' => 'required|integer',
+                    'data.attributes.email' => 'required|email|unique:users,email,'.$this->route('user')->id,
+                    'data.attributes.name' => 'required|min:1',
                     'data.attributes.password' => 'min:4',
                 ];
         }
@@ -55,6 +54,8 @@ class UserRequest extends JsonApiRequest
         return [
             'data.type.required' => 'The resource type is required',
             'data.type.in' => 'The resource type must be `users`',
+            'data.id.required' => 'The id is required',
+            'data.id.integer' => 'The id must be a number',
             'data.attributes.email.required' => 'You must enter an email',
             'data.attributes.email.email' => 'You must enter a valid email',
             'data.attributes.email.unique' => 'The email has already been used',

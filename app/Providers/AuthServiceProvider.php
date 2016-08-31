@@ -2,6 +2,8 @@
 
 namespace Pickems\Providers;
 
+use Pickems\Models\User;
+use Pickems\Policies\UserPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -12,7 +14,7 @@ class AuthServiceProvider extends ServiceProvider
      * @var array
      */
     protected $policies = [
-        'Pickems\Model' => 'Pickems\Policies\ModelPolicy',
+        User::class => UserPolicy::class,
     ];
 
     /**
