@@ -1,9 +1,7 @@
 <?php
 
 use Pickems\Models\User;
-use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class IndexTest extends TestCase
 {

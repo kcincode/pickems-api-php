@@ -3,9 +3,7 @@
 namespace Pickems\Http\Controllers;
 
 use Illuminate\Http\Request;
-
 use JWTAuth;
-use Pickems\Http\Requests;
 
 class AuthController extends Controller
 {
@@ -16,7 +14,7 @@ class AuthController extends Controller
 
         try {
             // attempt to verify the credentials and create a token for the user
-            if (! $access_token = JWTAuth::attempt($credentials)) {
+            if (!$access_token = JWTAuth::attempt($credentials)) {
                 return $this->renderError('Invalid Credentials', 401);
             }
         } catch (JWTException $e) {
