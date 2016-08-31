@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Exceptions;
+namespace Pickems\Exceptions;
 
 use Exception;
 use Illuminate\Auth\AuthenticationException;
@@ -42,9 +42,16 @@ class Handler extends ExceptionHandler
      * @param  \Exception  $exception
      * @return \Illuminate\Http\Response
      */
-    public function render($request, Exception $exception)
+    public function render($request, Exception $e)
     {
-        return parent::render($request, $exception);
+        if ($e instanceof Tymon\JWTAuth\Exceptions\TokenExpiredException) {
+            return response()->json(['errors' => [['title' => 'Token Expired', 'code' => $e->getStatusCode()]]], $e->getStatusCode());
+        } else if ($e instanceof Tymon\JWTAuth\Exceptions\TokenInvalidException) {
+            return response()->json(['errors' => [['title' => 'Token Invalid', 'code' => $e->getStatusCode()]]], $e->getStatusCode());
+        }
+
+        return parent::render($request, $e);
+        // return parent::render($request, $exception);
     }
 
     /**
@@ -56,10 +63,6 @@ class Handler extends ExceptionHandler
      */
     protected function unauthenticated($request, AuthenticationException $exception)
     {
-        if ($request->expectsJson()) {
-            return response()->json(['error' => 'Unauthenticated.'], 401);
-        }
-
-        return redirect()->guest('login');
+        return response()->json(['errors' => [['title' => 'Unauthorized', 'code' => 401]]], 401);
     }
 }
