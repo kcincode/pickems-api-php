@@ -77,69 +77,135 @@ class TeamsTest extends TestCase
         }
     }
 
-    // public function testUnauthenticatedDeleteRequest()
-    // {
-    //     // create a user
-    //     $user = factory(User::class)->create();
+    public function testUnauthenticatedDeleteRequest()
+    {
+        // create a team
+        $team = factory(Team::class)->create();
 
-    //     // make unauthenticated request
-    //     $response = $this->call('DELETE', '/api/teams/'.$user->id);
+        // make unauthenticated request
+        $response = $this->call('DELETE', '/api/teams/'.$team->id);
 
-    //     // check status code
-    //     $this->assertEquals(400, $response->getStatusCode(), 'it has the correct status code');
-    // }
+        // check status code
+        $this->assertEquals(400, $response->getStatusCode(), 'it has the correct status code');
+    }
 
-    // public function testInvalidDeleteRequest()
-    // {
-    //     // create a user and get token for the user
-    //     $user = factory(User::class)->create();
-    //     $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
+    public function testInvalidDeleteRequest()
+    {
+        // create a user and get token for the user
+        $user = factory(User::class)->create();
+        $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
 
-    //     // make invalid request
-    //     $response = $this->call('DELETE', '/api/teams/-1', [], [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
+        // make invalid request
+        $response = $this->call('DELETE', '/api/teams/-1', [], [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
 
-    //     // check status code
-    //     $this->assertEquals(404, $response->getStatusCode(), 'it has the correct status code');
-    // }
+        // check status code
+        $this->assertEquals(404, $response->getStatusCode(), 'it has the correct status code');
+    }
 
-    // public function testUnauthorizedDeleteRequest()
-    // {
-    //     // create a user and get token for the user
-    //     $user = factory(User::class)->create();
-    //     $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
+    public function testUnauthorizedDeleteRequest()
+    {
+        // create a user and get token for the user
+        $user = factory(User::class)->create();
+        $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
 
-    //     $newUser = factory(User::class)->create();
+        $team = factory(Team::class)->create();
 
-    //     // make invalid request
-    //     $response = $this->call('DELETE', '/api/teams/'.$newUser->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
+        // make invalid request
+        $response = $this->call('DELETE', '/api/teams/'.$team->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
 
-    //     // check status code
-    //     $this->assertEquals(403, $response->getStatusCode(), 'it has the correct status code');
-    // }
+        // check status code
+        $this->assertEquals(403, $response->getStatusCode(), 'it has the correct status code');
+    }
 
-    // public function testValidDeleteRequest()
-    // {
-    //     // create a user and get token for the user
-    //     $user = factory(User::class)->create(['role' => 'admin']);
-    //     $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
+    public function testValidAdminDeleteRequest()
+    {
+        // create a user and get token for the user
+        $user = factory(User::class)->create(['role' => 'admin']);
+        $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
 
-    //     $newUser = factory(User::class)->create();
+        $team = factory(Team::class)->create();
 
-    //     // make valid request
-    //     $response = $this->call('DELETE', '/api/teams/'.$newUser->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
-    //     $this->assertEquals(204, $response->getStatusCode(), 'it has the correct status code');
+        // make valid request
+        $response = $this->call('DELETE', '/api/teams/'.$team->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
+        $this->assertEquals(204, $response->getStatusCode(), 'it has the correct status code');
 
-    //     // check to make sure the user is no longer in the database
-    //     $this->assertEmpty(User::find($newUser->id), 'the user does not exist in the database');
-    // }
+        // check to make sure the team is no longer in the database
+        $this->assertEmpty(Team::find($team->id), 'the team does not exist in the database');
+    }
+
+    public function testValidUserDeleteRequest()
+    {
+        // create a user and get token for the user
+        $user = factory(User::class)->create();
+        $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
+
+        $team = factory(Team::class)->create(['user_id' => $user->id]);
+
+        // make valid request
+        $response = $this->call('DELETE', '/api/teams/'.$team->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
+        $this->assertEquals(204, $response->getStatusCode(), 'it has the correct status code');
+
+        // check to make sure the team is no longer in the database
+        $this->assertEmpty(Team::find($team->id), 'the team does not exist in the database');
+    }
+
+    public function testUnauthenticatedPostRequest()
+    {
+
+        // make unauthenticated request
+        $response = $this->call('POST', '/api/teams');
+
+        // check status code
+        $this->assertEquals(400, $response->getStatusCode(), 'it has the correct status code');
+    }
+
+    public function testValidPostRequest()
+    {
+        // create a user and get token for the user
+        $user = factory(User::class)->create();
+        $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
+
+        // make a request for a token
+        $response = $this->call('POST', '/api/teams', [], [], [], ['HTTP_Authorization' => 'Bearer '.$token], [
+            'data' => [
+                'type' => 'teams',
+                'attributes' => [
+                    'name' => 'Test Team',
+                    'paid' => true,
+                ],
+                'relationships' => [
+                    'user' => [
+                        'data' => [
+                            'type' => 'users',
+                            'id' => $user->id,
+                        ]
+                    ],
+                ],
+            ],
+        ]);
+
+        dd($response->content());
+
+        // check status code
+        $this->assertEquals(201, $response->status(), 'it returns a 201 status');
+
+        // get the data
+        $data = json_decode($response->content(), true);
+
+        // check to make sure that user id and object exists
+        $this->assertTrue(isset($data['data']['id']), 'the response has an id');
+        $user = User::find($data['data']['id']);
+        $this->assertNotNull($user, 'the user object exists in the database');
+        $this->assertFalse('testing' == $user->password, 'the users password is not in plain text');
+    }
 
     // public function testUnauthenticatedPatchRequest()
     // {
-    //     // create a user
-    //     $user = factory(User::class)->create();
+    //     // create a team
+    //     $team = factory(Team::class)->create();
 
     //     // make unauthenticated request
-    //     $response = $this->call('PATCH', '/api/teams/'.$user->id);
+    //     $response = $this->call('PATCH', '/api/teams/'.$team->id);
 
     //     // check status code
     //     $this->assertEquals(400, $response->getStatusCode(), 'it has the correct status code');
@@ -164,10 +230,10 @@ class TeamsTest extends TestCase
     //     $user = factory(User::class)->create();
     //     $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
 
-    //     $otherUser = factory(User::class)->create();
+    //     $team = factory(Team::class)->create();
 
     //     // make invalid request
-    //     $response = $this->call('PATCH', '/api/teams/'.$otherUser->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
+    //     $response = $this->call('PATCH', '/api/teams/'.$team->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
 
     //     // check status code
     //     $this->assertEquals(403, $response->getStatusCode(), 'it has the correct status code');
@@ -179,21 +245,29 @@ class TeamsTest extends TestCase
     //     $user = factory(User::class)->create(['role' => 'admin']);
     //     $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
 
-    //     $otherUser = factory(User::class)->create();
+    //     $team = factory(Team::class)->create();
 
     //     $patchData = [
     //         'data' => [
     //             'type' => 'teams',
-    //             'id' => $otherUser->id,
+    //             'id' => $team->id,
     //             'attributes' => [
-    //                 'name' => 'mod '.$otherUser->name,
-    //                 'email' => 'mod'.$otherUser->email
+    //                 'name' => 'mod '.$team->name,
+    //                 'paid' => false
+    //             ],
+    //             'relationships' => [
+    //                 'user' => [
+    //                     'data' => [
+    //                         'type' => 'users',
+    //                         'id' => $team->user->id,
+    //                     ]
+    //                 ]
     //             ]
     //         ]
     //     ];
 
     //     // make invalid request
-    //     $response = $this->call('PATCH', '/api/teams/'.$otherUser->id, $patchData, [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
+    //     $response = $this->call('PATCH', '/api/teams/'.$team->id, $patchData, [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
 
     //     // check status code
     //     $this->assertEquals(200, $response->getStatusCode(), 'it has the correct status code');

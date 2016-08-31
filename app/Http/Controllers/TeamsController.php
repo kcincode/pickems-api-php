@@ -46,7 +46,30 @@ class TeamsController extends Controller
      */
     public function store(TeamRequest $request)
     {
-        //
+        // fetch the data
+        $data = $request->input('data');
+        dd($data);
+
+        // check paid
+        if ($data['attributes']['paid'] == true) {
+            // make sure the user is an admin to set paid == true
+            $authUser = JWTAuth::parseToken()->authenticate();
+            if ($authUser->role != 'admin') {
+                $data['attributes']['paid'] = false;
+            }
+        }
+
+        // create the team
+        $team = new Team($data['attributes']);
+
+        // set the user relation
+        $team->user_id = $data['relationships']['user']['data']['id'];
+        $team->save();
+
+        // generate resource
+        $resource = new Item($team, new TeamTransformer, 'teams');
+
+        return $this->jsonResponse($resource, 201);
     }
 
     /**
@@ -83,7 +106,29 @@ class TeamsController extends Controller
      */
     public function update(TeamRequest $request, Team $team)
     {
-        //
+        // fetch the data
+        $data = $request->input('data');
+
+        // check paid
+        if ($data['attributes']['paid'] == true) {
+            // make sure the user is an admin to set paid == true
+            $authUser = JWTAuth::parseToken()->authenticate();
+            if ($authUser->role != 'admin') {
+                $data['attributes']['paid'] = false;
+            }
+        }
+
+        // update the team
+        $team->update($data['attributes']);
+
+        // update the user relation
+        $team->user_id = $data['relationships']['user']['data']['id'];
+        $team->save();
+
+        // generate resource
+        $resource = new Item($team, new TeamTransformer, 'teams');
+
+        return $this->jsonResponse($resource, 200);
     }
 
     /**
@@ -94,6 +139,13 @@ class TeamsController extends Controller
      */
     public function destroy(Team $team)
     {
-        //
+        // make sure it can be deleted
+        $this->authorize('delete', $team);
+
+        // delete the team
+        $team->delete();
+
+        // return empty response
+        return response()->json([], 204);
     }
 }

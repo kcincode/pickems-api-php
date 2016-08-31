@@ -10,7 +10,7 @@ class AuthTest extends TestCase
     public function testInvalidTokenRequest()
     {
         // make a request for a token
-        $response = $this->call('POST', '/api/token', ['email' => 'testuser@example.com', 'password' => 'testing']);
+        $response = $this->callPost('/api/token', json_encode(['email' => 'testuser@example.com', 'password' => 'testing']));
 
         // check status code
         $this->assertEquals(401, $response->status());
@@ -26,7 +26,7 @@ class AuthTest extends TestCase
         $user = factory(User::class)->create(['password' => bcrypt('testing')]);
 
         // make a request for a token
-        $response = $this->call('POST', '/api/token', ['email' => $user->email, 'password' => 'testing']);
+        $response = $this->callPost('/api/token', json_encode(['email' => $user->email, 'password' => 'testing']));
 
         // check status code
         $this->assertEquals(200, $response->status());
@@ -38,7 +38,7 @@ class AuthTest extends TestCase
     public function testValidRegistrationRequest()
     {
         // make a request for a token
-        $response = $this->call('POST', '/api/users', [
+        $response = $this->callPost('/api/users', json_encode([
             'data' => [
                 'type' => 'users',
                 'attributes' => [
@@ -47,7 +47,7 @@ class AuthTest extends TestCase
                     'password' => 'testing',
                 ],
             ],
-        ]);
+        ]));
 
         // check status code
         $this->assertEquals(201, $response->status(), 'it returns a 201 status');
@@ -71,7 +71,7 @@ class AuthTest extends TestCase
 
         foreach ($types as $type => $typeMessage) {
             // make an invalid request for a token
-            $response = $this->call('POST', '/api/users', [
+            $response = $this->callPost('/api/users', json_encode([
                 'data' => [
                     'type' => $type,
                     'attributes' => [
@@ -80,7 +80,7 @@ class AuthTest extends TestCase
                         'password' => 'testing',
                     ],
                 ],
-            ]);
+            ]));
 
             // check status code
             $this->assertEquals(422, $response->status(), 'it returns a 422 status');
@@ -106,7 +106,7 @@ class AuthTest extends TestCase
 
         foreach ($emails as $email => $emailMessage) {
             // make an invalid request for a token
-            $response = $this->call('POST', '/api/users', [
+            $response = $this->callPost('/api/users', json_encode([
                 'data' => [
                     'type' => 'users',
                     'attributes' => [
@@ -115,7 +115,7 @@ class AuthTest extends TestCase
                         'password' => 'testing',
                     ],
                 ],
-            ]);
+            ]));
 
             // check status code
             $this->assertEquals(422, $response->status(), 'it returns a 422 status');
@@ -130,7 +130,7 @@ class AuthTest extends TestCase
     public function testInvalidNameRegistrationRequest()
     {
         // make an invalid request for a token
-        $response = $this->call('POST', '/api/users', [
+        $response = $this->callPost('/api/users', json_encode([
             'data' => [
                 'type' => 'users',
                 'attributes' => [
@@ -138,7 +138,7 @@ class AuthTest extends TestCase
                     'password' => 'testing',
                 ],
             ],
-        ]);
+        ]));
 
         // check status code
         $this->assertEquals(422, $response->status(), 'it returns a 422 status');
@@ -152,7 +152,7 @@ class AuthTest extends TestCase
     public function testInvalidPasswordRegistrationRequest()
     {
         // make an invalid request for a token
-        $response = $this->call('POST', '/api/users', [
+        $response = $this->callPost('/api/users', json_encode([
             'data' => [
                 'type' => 'users',
                 'attributes' => [
@@ -160,7 +160,7 @@ class AuthTest extends TestCase
                     'name' => 'Test User',
                 ],
             ],
-        ]);
+        ]));
 
         // check status code
         $this->assertEquals(422, $response->status(), 'it returns a 422 status');

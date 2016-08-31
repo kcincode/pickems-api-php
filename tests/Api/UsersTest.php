@@ -186,7 +186,7 @@ class UsersTest extends TestCase
         ];
 
         // make invalid request
-        $response = $this->call('PATCH', '/api/users/'.$otherUser->id, $patchData, [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
+        $response = $this->call('PATCH', '/api/users/'.$otherUser->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token], json_encode($patchData));
 
         // check status code
         $this->assertEquals(200, $response->getStatusCode(), 'it has the correct status code');
@@ -219,7 +219,7 @@ class UsersTest extends TestCase
         ];
 
         // make invalid request
-        $response = $this->call('PATCH', '/api/users/'.$user->id, $patchData, [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
+        $response = $this->call('PATCH', '/api/users/'.$user->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token], json_encode($patchData));
 
         // check status code
         $this->assertEquals(200, $response->getStatusCode(), 'it has the correct status code');
@@ -251,7 +251,7 @@ class UsersTest extends TestCase
         ];
 
         // make invalid request
-        $response = $this->call('PATCH', '/api/users/'.$user->id, $patchData, [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
+        $response = $this->call('PATCH', '/api/users/'.$user->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token], json_encode($patchData));
 
         // check status code
         $this->assertEquals(422, $response->getStatusCode(), 'it has the correct status code');
@@ -287,7 +287,7 @@ class UsersTest extends TestCase
             $patchData['data']['type'] = $type;
 
             // make an invalid request for a token
-            $response = $this->call('PATCH', '/api/users/'.$user->id, $patchData, [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
+            $response = $this->call('PATCH', '/api/users/'.$user->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token], json_encode($patchData));
 
             // check status code
             $this->assertEquals(422, $response->status(), 'it returns a 422 status');
@@ -330,7 +330,7 @@ class UsersTest extends TestCase
             $patchData['data']['attributes']['email'] = $email;
 
             // make an invalid request for a token
-            $response = $this->call('PATCH', '/api/users/'.$user->id, $patchData, [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
+            $response = $this->call('PATCH', '/api/users/'.$user->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token], json_encode($patchData));
 
             // check status code
             $this->assertEquals(422, $response->status(), 'it returns a 422 status');
@@ -362,7 +362,7 @@ class UsersTest extends TestCase
         ];
 
         // make invalid request
-        $response = $this->call('PATCH', '/api/users/'.$otherUser->id, $patchData, [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
+        $response = $this->call('PATCH', '/api/users/'.$otherUser->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token], json_encode($patchData));
 
         // check status code
         $this->assertEquals(200, $response->getStatusCode(), 'it has the correct status code');
@@ -394,7 +394,7 @@ class UsersTest extends TestCase
         ];
 
         // make invalid request
-        $response = $this->call('PATCH', '/api/users/'.$user->id, $patchData, [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
+        $response = $this->call('PATCH', '/api/users/'.$user->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token], json_encode($patchData));
 
         // check status code
         $this->assertEquals(422, $response->getStatusCode(), 'it has the correct status code');
@@ -424,7 +424,7 @@ class UsersTest extends TestCase
         ];
 
         // make invalid request
-        $response = $this->call('PATCH', '/api/users/'.$otherUser->id, $patchData, [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
+        $response = $this->call('PATCH', '/api/users/'.$otherUser->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token], json_encode($patchData));
 
         // check status code
         $this->assertEquals(200, $response->getStatusCode(), 'it has the correct status code');
