@@ -7,6 +7,7 @@ use Pickems\Models\User;
 use Illuminate\Http\Request;
 use League\Fractal\Resource\Item;
 use Pickems\Http\Requests\UserRequest;
+use League\Fractal\Resource\Collection;
 use Pickems\Transformers\UserTransformer;
 
 class UsersController extends Controller
@@ -29,7 +30,12 @@ class UsersController extends Controller
      */
     public function index()
     {
-        //
+        $users = User::orderBy('name')->get();
+
+        // generate resource
+        $resource = new Collection($users, new UserTransformer, 'users');
+
+        return $this->jsonResponse($resource, 200);
     }
 
     /**
@@ -59,12 +65,15 @@ class UsersController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  User $user
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(User $user)
     {
-        //
+        // generate resource
+        $resource = new Item($user, new UserTransformer, 'users');
+
+        return $this->jsonResponse($resource, 200);
     }
 
     /**
