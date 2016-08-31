@@ -1,9 +1,7 @@
 <?php
 
 use Pickems\Models\User;
-use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class AuthTest extends TestCase
 {
@@ -35,5 +33,30 @@ class AuthTest extends TestCase
 
         $data = json_decode($response->content(), true);
         $this->assertTrue(isset($data['access_token']));
+    }
+
+    public function testValidRegistrationRequest()
+    {
+        // make a request for a token
+        $response = $this->call('POST', '/api/users', [
+            'data' => [
+                'type' => 'users',
+                'attributes' => [
+                    'name' => 'Test User',
+                    'email' => 'testuser@example.com',
+                    'password' => 'testing',
+                ],
+            ],
+        ]);
+
+        // check status code
+        $this->assertEquals(204, $response->status());
+
+        // get the data
+        $data = json_decode($response->content(), true);
+
+        // check to make sure that user id and object exists
+        $this->assertTrue(isset($data['data']['id']));
+        $this->assertNotNull(User::find($data['data']['id']));
     }
 }

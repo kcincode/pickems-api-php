@@ -19,8 +19,8 @@ class Controller extends BaseController
                 [
                     'title' => $message,
                     'code' => $code,
-                ]
-            ]
+                ],
+            ],
         ], $code);
     }
 }
