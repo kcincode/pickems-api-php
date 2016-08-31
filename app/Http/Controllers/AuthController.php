@@ -3,7 +3,6 @@
 namespace Pickems\Http\Controllers;
 
 use Illuminate\Http\Request;
-
 use JWTAuth;
 use Pickems\Http\Requests;
 
