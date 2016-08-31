@@ -80,22 +80,44 @@ class UsersController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param  User $user
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(UserRequest $request, User $user)
     {
-        //
+        // fetch the data
+        $data = $request->input('data');
+
+        // if password exists, hash the password
+        if (isset($data['attributes']['password'])) {
+            $data['attributes']['password'] = Hash::make($data['attributes']['password']);
+        }
+
+        // update the user
+        $user->update($data['attributes']);
+        $user->save();
+
+        // generate resource
+        $resource = new Item($user, new UserTransformer, 'users');
+
+        return $this->jsonResponse($resource, 200);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  User $user
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(User $user)
     {
-        //
+        // make sure it can be deleted
+        $this->authorize('delete', $user);
+
+        // delete the user
+        $user->delete();
+
+        // return empty response
+        return response()->json([], 204);
     }
 }

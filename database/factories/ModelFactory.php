@@ -18,5 +18,6 @@ $factory->define(Pickems\Models\User::class, function (Faker\Generator $faker) {
         'name' => $faker->name,
         'email' => $faker->safeEmail,
         'password' => $password ?: $password = bcrypt('secret'),
+        'role' => 'user',
     ];
 });
