@@ -102,406 +102,357 @@ class TeamsTest extends TestCase
         $this->assertEquals(403, $response->getStatusCode(), 'it has the correct status code');
     }
 
-    // public function testValidAdminDeleteRequest()
-    // {
-    //     // create a user and get token for the user
-    //     $user = factory(User::class)->create(['role' => 'admin']);
-    //     $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
-    //     $team = factory(Team::class)->create();
-
-    //     // make valid request
-    //     $response = $this->callDelete('/api/teams/'.$team->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
-    //     $this->assertEquals(204, $response->getStatusCode(), 'it has the correct status code');
-
-    //     // check to make sure the team is no longer in the database
-    //     $this->assertEmpty(Team::find($team->id), 'the team does not exist in the database');
-    // }
-
-    // public function testValidUserDeleteRequest()
-    // {
-    //     // create a user and get token for the user
-    //     $user = factory(User::class)->create();
-    //     $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
-    //     $team = factory(Team::class)->create(['user_id' => $user->id]);
-
-    //     // make valid request
-    //     $response = $this->callDelete('/api/teams/'.$team->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
-    //     $this->assertEquals(204, $response->getStatusCode(), 'it has the correct status code');
-
-    //     // check to make sure the team is no longer in the database
-    //     $this->assertEmpty(Team::find($team->id), 'the team does not exist in the database');
-    // }
-
-    // public function testUnauthenticatedPostRequest()
-    // {
-
-    //     // make unauthenticated request
-    //     $response = $this->call('POST', '/api/teams');
-
-    //     // check status code
-    //     $this->assertEquals(400, $response->getStatusCode(), 'it has the correct status code');
-    // }
-
-    // public function testValidPostRequest()
-    // {
-    //     // create a user and get token for the user
-    //     $user = factory(User::class)->create();
-    //     $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
-    //     // make a request for a token
-    //     $response = $this->call('POST', '/api/teams', [], [], [], ['HTTP_Authorization' => 'Bearer '.$token], [
-    //         'data' => [
-    //             'type' => 'teams',
-    //             'attributes' => [
-    //                 'name' => 'Test Team',
-    //                 'paid' => true,
-    //             ],
-    //             'relationships' => [
-    //                 'user' => [
-    //                     'data' => [
-    //                         'type' => 'users',
-    //                         'id' => $user->id,
-    //                     ]
-    //                 ],
-    //             ],
-    //         ],
-    //     ]);
-
-    //     dd($response->content());
-
-    //     // check status code
-    //     $this->assertEquals(201, $response->status(), 'it returns a 201 status');
-
-    //     // get the data
-    //     $data = json_decode($response->content(), true);
-
-    //     // check to make sure that user id and object exists
-    //     $this->assertTrue(isset($data['data']['id']), 'the response has an id');
-    //     $user = User::find($data['data']['id']);
-    //     $this->assertNotNull($user, 'the user object exists in the database');
-    //     $this->assertFalse('testing' == $user->password, 'the users password is not in plain text');
-    // }
-
-    // public function testUnauthenticatedPatchRequest()
-    // {
-    //     // create a team
-    //     $team = factory(Team::class)->create();
-
-    //     // make unauthenticated request
-    //     $response = $this->call('PATCH', '/api/teams/'.$team->id);
-
-    //     // check status code
-    //     $this->assertEquals(400, $response->getStatusCode(), 'it has the correct status code');
-    // }
-
-    // public function testInvalidPatchRequest()
-    // {
-    //     // create a user and get token for the user
-    //     $user = factory(User::class)->create();
-    //     $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
-    //     // make invalid request
-    //     $response = $this->call('PATCH', '/api/teams/-1', [], [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
-
-    //     // check status code
-    //     $this->assertEquals(404, $response->getStatusCode(), 'it has the correct status code');
-    // }
-
-    // public function testUnauthorizedPatchRequest()
-    // {
-    //     // create a user and get token for the user
-    //     $user = factory(User::class)->create();
-    //     $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
-    //     $team = factory(Team::class)->create();
-
-    //     // make invalid request
-    //     $response = $this->call('PATCH', '/api/teams/'.$team->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
-
-    //     // check status code
-    //     $this->assertEquals(403, $response->getStatusCode(), 'it has the correct status code');
-    // }
-
-    // public function testAuthorizedAdminPatchRequest()
-    // {
-    //     // create a user and get token for the user
-    //     $user = factory(User::class)->create(['role' => 'admin']);
-    //     $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
-    //     $team = factory(Team::class)->create();
-
-    //     $patchData = [
-    //         'data' => [
-    //             'type' => 'teams',
-    //             'id' => $team->id,
-    //             'attributes' => [
-    //                 'name' => 'mod '.$team->name,
-    //                 'paid' => false
-    //             ],
-    //             'relationships' => [
-    //                 'user' => [
-    //                     'data' => [
-    //                         'type' => 'users',
-    //                         'id' => $team->user->id,
-    //                     ]
-    //                 ]
-    //             ]
-    //         ]
-    //     ];
-
-    //     // make invalid request
-    //     $response = $this->call('PATCH', '/api/teams/'.$team->id, $patchData, [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
-
-    //     // check status code
-    //     $this->assertEquals(200, $response->getStatusCode(), 'it has the correct status code');
-
-    //     // check attributes
-    //     $data = json_decode($response->content());
-    //     $this->assertNotEmpty($data, 'it has returned some data');
-
-    //     // check the attributes
-    //     foreach ($patchData['data']['attributes'] as $attr => $value) {
-    //         $this->assertEquals($value, $data->data->attributes->$attr, 'attribute matches whats expected');
-    //     }
-    // }
-
-    // public function testAuthorizedNonAdminPatchRequest()
-    // {
-    //     // create a user and get token for the user
-    //     $user = factory(User::class)->create();
-    //     $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
-    //     $patchData = [
-    //         'data' => [
-    //             'type' => 'teams',
-    //             'id' => $user->id,
-    //             'attributes' => [
-    //                 'name' => 'mod '.$user->name,
-    //                 'email' => 'mod'.$user->email
-    //             ]
-    //         ]
-    //     ];
-
-    //     // make invalid request
-    //     $response = $this->call('PATCH', '/api/teams/'.$user->id, $patchData, [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
-
-    //     // check status code
-    //     $this->assertEquals(200, $response->getStatusCode(), 'it has the correct status code');
-
-    //     // check attributes
-    //     $data = json_decode($response->content());
-    //     $this->assertNotEmpty($data, 'it has returned some data');
-
-    //     // check the attributes
-    //     foreach ($patchData['data']['attributes'] as $attr => $value) {
-    //         $this->assertEquals($value, $data->data->attributes->$attr, 'attribute matches whats expected');
-    //     }
-    // }
-
-    // public function testInvalidIdPatchRequest()
-    // {
-    //     // create a user and get token for the user
-    //     $user = factory(User::class)->create();
-    //     $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
-    //     $patchData = [
-    //         'data' => [
-    //             'type' => 'teams',
-    //             'attributes' => [
-    //                 'name' => 'mod '.$user->name,
-    //                 'email' => 'mod'.$user->email
-    //             ]
-    //         ]
-    //     ];
-
-    //     // make invalid request
-    //     $response = $this->call('PATCH', '/api/teams/'.$user->id, $patchData, [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
-
-    //     // check status code
-    //     $this->assertEquals(422, $response->getStatusCode(), 'it has the correct status code');
-
-    //     $errors = json_decode($response->content())->errors;
-    //     $this->assertEquals('The id is required', $errors[0]->title, 'it has the correct error message');
-    // }
-
-    // public function testInvalidTypePatchRequest()
-    // {
-    //     // create a user and get token for the user
-    //     $user = factory(User::class)->create();
-    //     $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
-    //     $origPatchData = [
-    //         'data' => [
-    //             'id' => $user->id,
-    //             'attributes' => [
-    //                 'name' => 'mod '.$user->name,
-    //                 'email' => 'mod'.$user->email
-    //             ]
-    //         ]
-    //     ];
-
-    //     // the types and expected messages
-    //     $types = [
-    //         null => 'The resource type is required',
-    //         'bleh' => 'The resource type must be `teams`',
-    //     ];
-
-    //     foreach ($types as $type => $typeMessage) {
-    //         $patchData = $origPatchData;
-    //         $patchData['data']['type'] = $type;
-
-    //         // make an invalid request for a token
-    //         $response = $this->call('PATCH', '/api/teams/'.$user->id, $patchData, [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
-
-    //         // check status code
-    //         $this->assertEquals(422, $response->status(), 'it returns a 422 status');
-
-    //         // check the error message
-    //         $errors = json_decode($response->content())->errors;
-    //         $this->assertEquals($typeMessage, $errors[0]->title, 'it has the correct error message');
-    //         $this->assertEquals(422, $errors[0]->status, 'it has the correct status code for the error message');
-    //     }
-    // }
-
-    // public function testInvalidEmailPatchRequest()
-    // {
-    //     // create a user and get token for the user
-    //     $user = factory(User::class)->create();
-    //     $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
-    //     // create already taken user
-    //     factory(User::class)->create(['email' => 'already@taken.com']);
-
-    //     $origPatchData = [
-    //         'data' => [
-    //             'type' => 'teams',
-    //             'id' => $user->id,
-    //             'attributes' => [
-    //                 'name' => 'mod '.$user->name,
-    //             ]
-    //         ]
-    //     ];
-
-    //     // the emails and expected messages
-    //     $emails = [
-    //         null => 'You must enter an email',
-    //         'notvalid' => 'You must enter a valid email',
-    //         'already@taken.com' => 'The email has already been used',
-    //     ];
-
-    //     foreach ($emails as $email => $emailMessage) {
-    //         $patchData = $origPatchData;
-    //         $patchData['data']['attributes']['email'] = $email;
-
-    //         // make an invalid request for a token
-    //         $response = $this->call('PATCH', '/api/teams/'.$user->id, $patchData, [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
-
-    //         // check status code
-    //         $this->assertEquals(422, $response->status(), 'it returns a 422 status');
-
-    //         // check the error message
-    //         $errors = json_decode($response->content())->errors;
-    //         $this->assertEquals($emailMessage, $errors[0]->title, 'it has the correct error message');
-    //         $this->assertEquals(422, $errors[0]->status, 'it has the correct status code for the error message');
-    //     }
-    // }
-
-    // public function testSameEmailPatchRequest()
-    // {
-    //     // create a user and get token for the user
-    //     $user = factory(User::class)->create(['role' => 'admin']);
-    //     $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
-    //     $otherUser = factory(User::class)->create();
-
-    //     $patchData = [
-    //         'data' => [
-    //             'type' => 'teams',
-    //             'id' => $otherUser->id,
-    //             'attributes' => [
-    //                 'name' => 'mod '.$otherUser->name,
-    //                 'email' => $otherUser->email,
-    //             ]
-    //         ]
-    //     ];
-
-    //     // make invalid request
-    //     $response = $this->call('PATCH', '/api/teams/'.$otherUser->id, $patchData, [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
-
-    //     // check status code
-    //     $this->assertEquals(200, $response->getStatusCode(), 'it has the correct status code');
-
-    //     // check attributes
-    //     $data = json_decode($response->content());
-    //     $this->assertNotEmpty($data, 'it has returned some data');
-
-    //     // check the attributes
-    //     foreach ($patchData['data']['attributes'] as $attr => $value) {
-    //         $this->assertEquals($value, $data->data->attributes->$attr, 'attribute matches whats expected');
-    //     }
-    // }
-
-    // public function testInvalidNamePatchRequest()
-    // {
-    //     // create a user and get token for the user
-    //     $user = factory(User::class)->create();
-    //     $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
-    //     $patchData = [
-    //         'data' => [
-    //             'type' => 'teams',
-    //             'id' => $user->id,
-    //             'attributes' => [
-    //                 'email' => 'mod'.$user->email
-    //             ]
-    //         ]
-    //     ];
-
-    //     // make invalid request
-    //     $response = $this->call('PATCH', '/api/teams/'.$user->id, $patchData, [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
-
-    //     // check status code
-    //     $this->assertEquals(422, $response->getStatusCode(), 'it has the correct status code');
-
-    //     $errors = json_decode($response->content())->errors;
-    //     $this->assertEquals('You must specify a name', $errors[0]->title, 'it has the correct error message');
-    // }
-
-    // public function testValidPasswordPatchRequest()
-    // {
-    //     // create a user and get token for the user
-    //     $user = factory(User::class)->create(['role' => 'admin']);
-    //     $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
-    //     $otherUser = factory(User::class)->create();
-
-    //     $patchData = [
-    //         'data' => [
-    //             'type' => 'teams',
-    //             'id' => $otherUser->id,
-    //             'attributes' => [
-    //                 'name' => 'mod '.$otherUser->name,
-    //                 'email' => $otherUser->email,
-    //                 'password' => 'testing2',
-    //             ]
-    //         ]
-    //     ];
-
-    //     // make invalid request
-    //     $response = $this->call('PATCH', '/api/teams/'.$otherUser->id, $patchData, [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
-
-    //     // check status code
-    //     $this->assertEquals(200, $response->getStatusCode(), 'it has the correct status code');
-
-    //     // check attributes
-    //     $data = json_decode($response->content());
-    //     $this->assertNotEmpty($data, 'it has returned some data');
-
-    //     // check the password attribute
-    //     $dbUser = User::find($otherUser->id);
-    //     $this->assertNotEmpty($dbUser, 'it has returned some data');
-    //     $this->assertTrue($dbUser->password != 'testing2' && $dbUser->password != $otherUser->password, 'it updated and hashed the password');
-    // }
+    public function testValidAdminDeleteRequest()
+    {
+        $team = factory(Team::class)->create();
+
+        // make valid request
+        $response = $this->callDelete('/api/teams/'.$team->id, 'admin');
+        $this->assertEquals(204, $response->getStatusCode(), 'it has the correct status code');
+
+        // check to make sure the team is no longer in the database
+        $this->assertEmpty(Team::find($team->id), 'the team does not exist in the database');
+    }
+
+    public function testValidUserDeleteRequest()
+    {
+        // create a user and get token for the user
+        $user = factory(User::class)->create();
+        $team = factory(Team::class)->create(['user_id' => $user->id]);
+
+        // make valid request
+        $response = $this->callDelete('/api/teams/'.$team->id, $user);
+        $this->assertEquals(204, $response->getStatusCode(), 'it has the correct status code');
+
+        // check to make sure the team is no longer in the database
+        $this->assertEmpty(Team::find($team->id), 'the team does not exist in the database');
+    }
+
+    public function testUnauthenticatedPostRequest()
+    {
+        // make unauthenticated request
+        $response = $this->callPost('/api/teams', []);
+
+        // check status code
+        $this->assertEquals(400, $response->getStatusCode(), 'it has the correct status code');
+    }
+
+    public function testValidPostRequest()
+    {
+        // create a user and get token for the user
+        $user = factory(User::class)->create();
+
+        $postData = [
+            'data' => [
+                'type' => 'teams',
+                'attributes' => [
+                    'name' => 'Test Team',
+                    'paid' => true,
+                ],
+                'relationships' => [
+                    'user' => [
+                        'data' => [
+                            'type' => 'users',
+                            'id' => $user->id,
+                        ]
+                    ],
+                ],
+            ],
+        ];
+
+        // make a request for a token
+        $response = $this->callPost('/api/teams', json_encode($postData), $user);
+
+        // check status code
+        $this->assertEquals(201, $response->status(), 'it returns a 201 status');
+
+        // get the data
+        $data = json_decode($response->content(), true);
+
+        // check to make sure that user id and object exists
+        $this->assertTrue(isset($data['data']['id']), 'the response has an id');
+        $user = User::find($data['data']['id']);
+        $this->assertNotNull($user, 'the user object exists in the database');
+        $this->assertFalse('testing' == $user->password, 'the users password is not in plain text');
+    }
+
+    public function testUnauthenticatedPatchRequest()
+    {
+        // create a team
+        $team = factory(Team::class)->create();
+
+        // make unauthenticated request
+        $response = $this->callPatch('/api/teams/'.$team->id, []);
+
+        // check status code
+        $this->assertEquals(400, $response->getStatusCode(), 'it has the correct status code');
+    }
+
+    public function testInvalidPatchRequest()
+    {
+        // create a user and get token for the user
+        $user = factory(User::class)->create();
+
+        // make invalid request
+        $response = $this->callPatch('/api/teams/-1', [], $user);
+
+        // check status code
+        $this->assertEquals(404, $response->getStatusCode(), 'it has the correct status code');
+    }
+
+    public function testUnauthorizedPatchRequest()
+    {
+        // create a user and get token for the user
+        $user = factory(User::class)->create();
+        $team = factory(Team::class)->create();
+
+        // make invalid request
+        $response = $this->callPatch('/api/teams/'.$team->id, json_encode([]), $user);
+
+        // check status code
+        $this->assertEquals(403, $response->getStatusCode(), 'it has the correct status code');
+    }
+
+    public function testAuthorizedAdminPatchRequest()
+    {
+        // create a user and get token for the user
+        $user = factory(User::class)->create(['role' => 'admin']);
+        $team = factory(Team::class)->create();
+
+        $patchData = [
+            'data' => [
+                'type' => 'teams',
+                'id' => $team->id,
+                'attributes' => [
+                    'name' => 'mod '.$team->name,
+                    'paid' => false
+                ],
+                'relationships' => [
+                    'user' => [
+                        'data' => [
+                            'type' => 'users',
+                            'id' => $team->user->id,
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        // make invalid request
+        $response = $this->callPatch('/api/teams/'.$team->id, json_encode($patchData), 'admin');
+
+        // check status code
+        $this->assertEquals(200, $response->getStatusCode(), 'it has the correct status code');
+
+        // check attributes
+        $data = json_decode($response->content());
+        $this->assertNotEmpty($data, 'it has returned some data');
+
+        // check the attributes
+        foreach ($patchData['data']['attributes'] as $attr => $value) {
+            $this->assertEquals($value, $data->data->attributes->$attr, 'attribute matches whats expected');
+        }
+    }
+
+    public function testAuthorizedNonAdminPatchRequest()
+    {
+        $team = factory(Team::class)->create();
+
+        $patchData = [
+            'data' => [
+                'type' => 'teams',
+                'id' => $team->id,
+                'attributes' => [
+                    'name' => 'mod '.$team->name,
+                    'paid' => false,
+                ],
+                'relationships' => [
+                    'user' => [
+                        'data' => [
+                            'type' => 'users',
+                            'id' => $team->user->id,
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        // make invalid request
+        $response = $this->callPatch('/api/teams/'.$team->id, json_encode($patchData), $team->user);
+
+        // check status code
+        $this->assertEquals(200, $response->getStatusCode(), 'it has the correct status code');
+
+        // check attributes
+        $data = json_decode($response->content());
+        $this->assertNotEmpty($data, 'it has returned some data');
+
+        // check the attributes
+        foreach ($patchData['data']['attributes'] as $attr => $value) {
+            $this->assertEquals($value, $data->data->attributes->$attr, 'attribute matches whats expected');
+        }
+    }
+
+    public function testInvalidIdPatchRequest()
+    {
+        $team = factory(Team::class)->create();
+
+        $patchData = [
+            'data' => [
+                'type' => 'teams',
+                'attributes' => [
+                    'name' => 'mod '.$team->name,
+                    'paid' => false,
+                ],
+                'relationships' => [
+                    'user' => [
+                        'data' => [
+                            'type' => 'users',
+                            'id' => $team->user->id,
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        // make invalid request
+        $response = $this->callPatch('/api/teams/'.$team->id, json_encode($patchData), $team->user);
+
+        // check status code
+        $this->assertEquals(422, $response->getStatusCode(), 'it has the correct status code');
+
+        $errors = json_decode($response->content())->errors;
+        $this->assertEquals('The id is required', $errors[0]->title, 'it has the correct error message');
+    }
+
+    public function testInvalidTypePatchRequest()
+    {
+        $team = factory(Team::class)->create();
+
+        $origPatchData = [
+            'data' => [
+                'type' => 'teams',
+                'id' => $team->id,
+                'attributes' => [
+                    'name' => 'mod '.$team->name,
+                    'paid' => false,
+                ],
+                'relationships' => [
+                    'user' => [
+                        'data' => [
+                            'type' => 'users',
+                            'id' => $team->user->id,
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        // the types and expected messages
+        $types = [
+            null => 'The resource type is required',
+            'bleh' => 'The resource type must be `teams`',
+        ];
+
+        foreach ($types as $type => $typeMessage) {
+            $patchData = $origPatchData;
+            $patchData['data']['type'] = $type;
+
+            // make an invalid request for a token
+            $response = $this->callPatch('/api/teams/'.$team->id, json_encode($patchData), $team->user);
+
+            // check status code
+            $this->assertEquals(422, $response->status(), 'it returns a 422 status');
+
+            // check the error message
+            $errors = json_decode($response->content())->errors;
+            $this->assertEquals($typeMessage, $errors[0]->title, 'it has the correct error message');
+            $this->assertEquals(422, $errors[0]->status, 'it has the correct status code for the error message');
+        }
+    }
+
+    public function testInvalidNamePatchRequest()
+    {
+        // create already taken team
+        $team = factory(Team::class)->create();
+        $otherTeam = factory(Team::class)->create();
+
+        $origPatchData = [
+            'data' => [
+                'type' => 'teams',
+                'id' => $team->id,
+                'attributes' => [
+                    'paid' => false,
+                ],
+                'relationships' => [
+                    'user' => [
+                        'data' => [
+                            'type' => 'users',
+                            'id' => $team->user->id,
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        // the emails and expected messages
+        $names = [
+            null => 'You must specify a name',
+            $otherTeam->name => 'The name has already been used',
+        ];
+
+        foreach ($names as $name => $nameMessage) {
+            $patchData = $origPatchData;
+            $patchData['data']['attributes']['name'] = $name;
+
+            // make an invalid request for a token
+            $response = $this->callPatch('/api/teams/'.$team->id, json_encode($patchData), $team->user);
+
+            // check status code
+            $this->assertEquals(422, $response->status(), 'it returns a 422 status');
+
+            // check the error message
+            $errors = json_decode($response->content())->errors;
+            $this->assertEquals($nameMessage, $errors[0]->title, 'it has the correct error message');
+            $this->assertEquals(422, $errors[0]->status, 'it has the correct status code for the error message');
+        }
+    }
+
+    public function testSameNamePatchRequest()
+    {
+        $team = factory(Team::class)->create();
+
+        $patchData = [
+            'data' => [
+                'type' => 'teams',
+                'id' => $team->id,
+                'attributes' => [
+                    'name' => $team->name,
+                    'paid' => false,
+                ],
+                'relationships' => [
+                    'user' => [
+                        'data' => [
+                            'type' => 'users',
+                            'id' => $team->user->id,
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        // make invalid request
+        $response = $this->callPatch('/api/teams/'.$team->id, json_encode($patchData), $team->user);
+
+        // check status code
+        $this->assertEquals(200, $response->getStatusCode(), 'it has the correct status code');
+
+        // check attributes
+        $data = json_decode($response->content());
+        $this->assertNotEmpty($data, 'it has returned some data');
+
+        // check the attributes
+        foreach ($patchData['data']['attributes'] as $attr => $value) {
+            $this->assertEquals($value, $data->data->attributes->$attr, 'attribute matches whats expected');
+        }
+    }
 }

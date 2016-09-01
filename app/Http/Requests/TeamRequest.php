@@ -34,20 +34,20 @@ class TeamRequest extends JsonApiRequest
             case 'POST':
                 return [
                     'data.type' => 'required|in:teams',
-                    'data.attributes.name' => 'required',
+                    'data.attributes.name' => 'required|unique:teams,name',
                     'data.attributes.paid' => 'required',
                     'data.relationships.user.data.id' => 'required|integer',
-                    'data.relationships.user.data.type' => 'required|in:teams',
+                    'data.relationships.user.data.type' => 'required|in:users',
                 ];
             case 'PUT':
             case 'PATCH':
                 return [
                     'data.type' => 'required|in:teams',
                     'data.id' => 'required|integer',
-                    'data.attributes.name' => 'required',
+                    'data.attributes.name' => 'required|unique:teams,name,'.$this->route('team')->id,
                     'data.attributes.paid' => 'required',
                     'data.relationships.user.data.id' => 'required|integer',
-                    'data.relationships.user.data.type' => 'required|in:teams',
+                    'data.relationships.user.data.type' => 'required|in:users',
                 ];
         }
     }
@@ -56,6 +56,7 @@ class TeamRequest extends JsonApiRequest
     {
         return [
             'data.attributes.name.required' => 'You must specify a name',
+            'data.attributes.name.unique' => 'The name has already been used',
             'data.attributes.paid.required' => 'You must enter a password',
             'data.type.required' => 'The resource type is required',
             'data.type.in' => 'The resource type must be `teams`',

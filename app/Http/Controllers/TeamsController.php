@@ -4,6 +4,7 @@ namespace Pickems\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+use JWTAuth;
 use Pickems\Models\Team;
 use League\Fractal\Resource\Item;
 use Pickems\Http\Requests\TeamRequest;
@@ -48,7 +49,6 @@ class TeamsController extends Controller
     {
         // fetch the data
         $data = $request->input('data');
-        dd($data);
 
         // check paid
         if ($data['attributes']['paid'] == true) {
@@ -87,17 +87,6 @@ class TeamsController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  Team $team
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Team $team)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -109,13 +98,9 @@ class TeamsController extends Controller
         // fetch the data
         $data = $request->input('data');
 
-        // check paid
-        if ($data['attributes']['paid'] == true) {
-            // make sure the user is an admin to set paid == true
-            $authUser = JWTAuth::parseToken()->authenticate();
-            if ($authUser->role != 'admin') {
-                $data['attributes']['paid'] = false;
-            }
+        // unset paid if user is not an admin
+        if (isset($data['attributes']['paid']) && JWTAuth::parseToken()->authenticate()->role != 'admin') {
+            unset($data['attributes']['paid']);
         }
 
         // update the team
