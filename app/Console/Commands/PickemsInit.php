@@ -63,10 +63,13 @@ class PickemsInit extends Command
         $this->loadNflData('teams', 'Pickems\Models\NflTeam');
         $this->loadNflData('games', 'Pickems\Models\NflGame');
         $this->loadNflData('players', 'Pickems\Models\NflPlayer');
+
+        $this->call('pickems:fetch', ['year' => $this->argument('year')]);
     }
 
     private function loadNflData($type, $model)
     {
+        $start = microtime(true);
         $this->info("Loading NFL {$type}:");
         $items = $this->nflScrape->{'fetch'.ucfirst($type)}();
         $bar = $this->output->createProgressBar(count($items));
@@ -75,6 +78,8 @@ class PickemsInit extends Command
             $bar->advance();
         }
         $bar->finish();
-        echo "\n";
+
+        $time = number_format(microtime(true) - $start, 2);
+        $this->info('    '.$time. ' seconds');
     }
 }

@@ -42,4 +42,14 @@ class NflGame extends Model
 
         return $game;
     }
+
+    public static function currentWeek()
+    {
+        $game = self::where('starts_at', '>=', 'NOW()')->orderBy('starts_at', 'asc')->first();
+        if ($game) {
+            return $game->type.'-'.$game->week;
+        }
+
+        return 'POST-5';
+    }
 }
