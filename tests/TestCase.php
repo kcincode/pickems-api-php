@@ -1,5 +1,7 @@
 <?php
 
+use Pickems\Models\User;
+
 abstract class TestCase extends Illuminate\Foundation\Testing\TestCase
 {
     /**
@@ -8,6 +10,8 @@ abstract class TestCase extends Illuminate\Foundation\Testing\TestCase
      * @var string
      */
     protected $baseUrl = 'http://localhost';
+
+    protected $authUser = null;
 
     /**
      * Creates the application.
@@ -88,12 +92,15 @@ abstract class TestCase extends Illuminate\Foundation\Testing\TestCase
 
         // setup token auth if specified
         if ($auth) {
-            // get or create an auth user
-            $user = User::first();
-            if (empty($user)) {
-                $user = factory(User::class)->create();
+            // create an auth user
+            if (gettype($auth) == 'object') {
+                $authUser = $auth;
+            } else {
+                $user = factory(User::class)->create(['role' => $auth]);
+                $authUser = $user;
             }
-            $token = JWTAuth::fromUser($user);
+
+            $token = JWTAuth::fromUser($authUser);
             $headers['Authorization'] = 'Bearer '.$token;
         }
 

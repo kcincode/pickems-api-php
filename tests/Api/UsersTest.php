@@ -11,7 +11,7 @@ class UsersTest extends TestCase
     public function testUnauthenticatedGetRequest()
     {
         // make unauthenticated request
-        $response = $this->call('GET', '/api/users');
+        $response = $this->callGet('/api/users');
 
         // check status code
         $this->assertEquals(400, $response->getStatusCode(), 'it has the correct status code');
@@ -19,12 +19,8 @@ class UsersTest extends TestCase
 
     public function testInvalidGetRequest()
     {
-        // create a user and get token for the user
-        $user = factory(User::class)->create();
-        $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
         // make an invalid request
-        $response = $this->call('GET', '/api/users/-1', [], [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
+        $response = $this->callGet('/api/users/-1', [], 'user');
 
         // check status code
         $this->assertEquals(404, $response->getStatusCode(), 'it has the correct status code');
@@ -32,15 +28,11 @@ class UsersTest extends TestCase
 
     public function testValidGetRequest()
     {
-        // create a user and get token for the user
-        $user = factory(User::class)->create();
-        $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
-        // create another user
-        factory(User::class)->create();
+        // create 2 user
+        factory(User::class, 2)->create();
 
         // make a request
-        $response = $this->call('GET', '/api/users', [], [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
+        $response = $this->callGet('/api/users', [], 'user');
 
         // check status code
         $this->assertEquals(200, $response->getStatusCode(), 'it has the correct status code');
@@ -48,11 +40,11 @@ class UsersTest extends TestCase
         // check the number of data points are correct
         $data = json_decode($response->content());
         $this->assertNotEmpty($data, 'it has returned some data');
-        $this->assertEquals(2, count($data->data), 'it has the correct number of records');
+        $this->assertEquals(3, count($data->data), 'it has the correct number of records');
 
         foreach ($data->data as $user) {
             // make single request
-            $singleResponse = $this->call('GET', '/api/users/'.$user->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
+            $singleResponse = $this->callGet('/api/users/'.$user->id, [], 'user');
             $this->assertEquals(200, $singleResponse->getStatusCode(), 'it has the correct status code');
 
             // check for correct info
@@ -76,7 +68,7 @@ class UsersTest extends TestCase
         $user = factory(User::class)->create();
 
         // make unauthenticated request
-        $response = $this->call('DELETE', '/api/users/'.$user->id);
+        $response = $this->callDelete('/api/users/'.$user->id);
 
         // check status code
         $this->assertEquals(400, $response->getStatusCode(), 'it has the correct status code');
@@ -84,12 +76,8 @@ class UsersTest extends TestCase
 
     public function testInvalidDeleteRequest()
     {
-        // create a user and get token for the user
-        $user = factory(User::class)->create();
-        $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
         // make invalid request
-        $response = $this->call('DELETE', '/api/users/-1', [], [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
+        $response = $this->callDelete('/api/users/-1', [], 'user');
 
         // check status code
         $this->assertEquals(404, $response->getStatusCode(), 'it has the correct status code');
@@ -97,14 +85,10 @@ class UsersTest extends TestCase
 
     public function testUnauthorizedDeleteRequest()
     {
-        // create a user and get token for the user
-        $user = factory(User::class)->create();
-        $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
         $newUser = factory(User::class)->create();
 
         // make invalid request
-        $response = $this->call('DELETE', '/api/users/'.$newUser->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
+        $response = $this->callDelete('/api/users/'.$newUser->id, 'user');
 
         // check status code
         $this->assertEquals(403, $response->getStatusCode(), 'it has the correct status code');
@@ -112,14 +96,10 @@ class UsersTest extends TestCase
 
     public function testValidDeleteRequest()
     {
-        // create a user and get token for the user
-        $user = factory(User::class)->create(['role' => 'admin']);
-        $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
         $newUser = factory(User::class)->create();
 
         // make valid request
-        $response = $this->call('DELETE', '/api/users/'.$newUser->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
+        $response = $this->callDelete('/api/users/'.$newUser->id, 'admin');
         $this->assertEquals(204, $response->getStatusCode(), 'it has the correct status code');
 
         // check to make sure the user is no longer in the database
@@ -132,7 +112,7 @@ class UsersTest extends TestCase
         $user = factory(User::class)->create();
 
         // make unauthenticated request
-        $response = $this->call('PATCH', '/api/users/'.$user->id);
+        $response = $this->callPatch('/api/users/'.$user->id, []);
 
         // check status code
         $this->assertEquals(400, $response->getStatusCode(), 'it has the correct status code');
@@ -140,12 +120,8 @@ class UsersTest extends TestCase
 
     public function testInvalidPatchRequest()
     {
-        // create a user and get token for the user
-        $user = factory(User::class)->create();
-        $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
         // make invalid request
-        $response = $this->call('PATCH', '/api/users/-1', [], [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
+        $response = $this->callPatch('/api/users/-1', [], 'user');
 
         // check status code
         $this->assertEquals(404, $response->getStatusCode(), 'it has the correct status code');
@@ -153,14 +129,10 @@ class UsersTest extends TestCase
 
     public function testUnauthorizedPatchRequest()
     {
-        // create a user and get token for the user
-        $user = factory(User::class)->create();
-        $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
         $otherUser = factory(User::class)->create();
 
         // make invalid request
-        $response = $this->call('PATCH', '/api/users/'.$otherUser->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
+        $response = $this->callPatch('/api/users/'.$otherUser->id, json_encode([]), 'user');
 
         // check status code
         $this->assertEquals(403, $response->getStatusCode(), 'it has the correct status code');
@@ -168,10 +140,6 @@ class UsersTest extends TestCase
 
     public function testAuthorizedAdminPatchRequest()
     {
-        // create a user and get token for the user
-        $user = factory(User::class)->create(['role' => 'admin']);
-        $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
         $otherUser = factory(User::class)->create();
 
         $patchData = [
@@ -186,7 +154,7 @@ class UsersTest extends TestCase
         ];
 
         // make invalid request
-        $response = $this->call('PATCH', '/api/users/'.$otherUser->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token], json_encode($patchData));
+        $response = $this->callPatch('/api/users/'.$otherUser->id, json_encode($patchData), 'admin');
 
         // check status code
         $this->assertEquals(200, $response->getStatusCode(), 'it has the correct status code');
@@ -203,23 +171,20 @@ class UsersTest extends TestCase
 
     public function testAuthorizedNonAdminPatchRequest()
     {
-        // create a user and get token for the user
         $user = factory(User::class)->create();
-        $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
         $patchData = [
             'data' => [
                 'type' => 'users',
                 'id' => $user->id,
                 'attributes' => [
-                    'name' => 'mod '.$user->name,
-                    'email' => 'mod'.$user->email
+                    'name' => 'Modified User',
+                    'email' => 'modemail@example.com',
                 ]
             ]
         ];
 
         // make invalid request
-        $response = $this->call('PATCH', '/api/users/'.$user->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token], json_encode($patchData));
+        $response = $this->callPatch('/api/users/'.$user->id, json_encode($patchData), $user);
 
         // check status code
         $this->assertEquals(200, $response->getStatusCode(), 'it has the correct status code');
@@ -236,9 +201,7 @@ class UsersTest extends TestCase
 
     public function testInvalidIdPatchRequest()
     {
-        // create a user and get token for the user
         $user = factory(User::class)->create();
-        $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
 
         $patchData = [
             'data' => [
@@ -251,7 +214,7 @@ class UsersTest extends TestCase
         ];
 
         // make invalid request
-        $response = $this->call('PATCH', '/api/users/'.$user->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token], json_encode($patchData));
+        $response = $this->callPatch('/api/users/'.$user->id, json_encode($patchData), $user);
 
         // check status code
         $this->assertEquals(422, $response->getStatusCode(), 'it has the correct status code');
@@ -262,10 +225,7 @@ class UsersTest extends TestCase
 
     public function testInvalidTypePatchRequest()
     {
-        // create a user and get token for the user
         $user = factory(User::class)->create();
-        $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
         $origPatchData = [
             'data' => [
                 'id' => $user->id,
@@ -287,7 +247,7 @@ class UsersTest extends TestCase
             $patchData['data']['type'] = $type;
 
             // make an invalid request for a token
-            $response = $this->call('PATCH', '/api/users/'.$user->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token], json_encode($patchData));
+            $response = $this->callPatch('/api/users/'.$user->id, json_encode($patchData), $user);
 
             // check status code
             $this->assertEquals(422, $response->status(), 'it returns a 422 status');
@@ -301,12 +261,9 @@ class UsersTest extends TestCase
 
     public function testInvalidEmailPatchRequest()
     {
-        // create a user and get token for the user
-        $user = factory(User::class)->create();
-        $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
         // create already taken user
         factory(User::class)->create(['email' => 'already@taken.com']);
+        $user = factory(User::class)->create();
 
         $origPatchData = [
             'data' => [
@@ -330,7 +287,7 @@ class UsersTest extends TestCase
             $patchData['data']['attributes']['email'] = $email;
 
             // make an invalid request for a token
-            $response = $this->call('PATCH', '/api/users/'.$user->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token], json_encode($patchData));
+            $response = $this->callPatch('/api/users/'.$user->id, json_encode($patchData), $user);
 
             // check status code
             $this->assertEquals(422, $response->status(), 'it returns a 422 status');
@@ -344,10 +301,6 @@ class UsersTest extends TestCase
 
     public function testSameEmailPatchRequest()
     {
-        // create a user and get token for the user
-        $user = factory(User::class)->create(['role' => 'admin']);
-        $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
         $otherUser = factory(User::class)->create();
 
         $patchData = [
@@ -362,7 +315,7 @@ class UsersTest extends TestCase
         ];
 
         // make invalid request
-        $response = $this->call('PATCH', '/api/users/'.$otherUser->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token], json_encode($patchData));
+        $response = $this->callPatch('/api/users/'.$otherUser->id, json_encode($patchData), 'admin');
 
         // check status code
         $this->assertEquals(200, $response->getStatusCode(), 'it has the correct status code');
@@ -379,10 +332,7 @@ class UsersTest extends TestCase
 
     public function testInvalidNamePatchRequest()
     {
-        // create a user and get token for the user
         $user = factory(User::class)->create();
-        $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
         $patchData = [
             'data' => [
                 'type' => 'users',
@@ -394,7 +344,7 @@ class UsersTest extends TestCase
         ];
 
         // make invalid request
-        $response = $this->call('PATCH', '/api/users/'.$user->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token], json_encode($patchData));
+        $response = $this->callPatch('/api/users/'.$user->id, json_encode($patchData), $user);
 
         // check status code
         $this->assertEquals(422, $response->getStatusCode(), 'it has the correct status code');
@@ -405,10 +355,6 @@ class UsersTest extends TestCase
 
     public function testValidPasswordPatchRequest()
     {
-        // create a user and get token for the user
-        $user = factory(User::class)->create(['role' => 'admin']);
-        $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
         $otherUser = factory(User::class)->create();
 
         $patchData = [
@@ -424,7 +370,7 @@ class UsersTest extends TestCase
         ];
 
         // make invalid request
-        $response = $this->call('PATCH', '/api/users/'.$otherUser->id, [], [], [], ['HTTP_Authorization' => 'Bearer '.$token], json_encode($patchData));
+        $response = $this->callPatch('/api/users/'.$otherUser->id, json_encode($patchData), 'admin');
 
         // check status code
         $this->assertEquals(200, $response->getStatusCode(), 'it has the correct status code');
