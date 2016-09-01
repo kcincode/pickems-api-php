@@ -15,12 +15,8 @@ class IndexTest extends TestCase
 
     public function testAuthorizedRequest()
     {
-        // create a user and get token for the user
-        $user = factory(User::class)->create();
-        $token = Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
-
         // make a request
-        $response = $this->call('GET', '/api', [], [], [], ['HTTP_Authorization' => 'Bearer '.$token]);
+        $response = $this->callGet('/api', [], 'user');
 
         // check for the json payload
         $this->json('GET', '/api')

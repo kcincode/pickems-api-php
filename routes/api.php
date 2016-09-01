@@ -18,4 +18,7 @@ Route::get('/', function (Request $request) {
 })->middleware('jwt.auth');
 
 Route::post('/token', 'AuthController@token');
+
 Route::resource('users', 'UsersController', ['except' => ['create', 'edit']]);
+
+Route::resource('teams', 'TeamsController', ['except' => ['create', 'edit']]);
