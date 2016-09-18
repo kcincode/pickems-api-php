@@ -52,4 +52,18 @@ class NflGame extends Model
 
         return 'POST-5';
     }
+
+    public static function fetchApiSchedule($week)
+    {
+        $games = self::where('week', '=', $week)
+            ->orderBy('starts_at', 'asc')
+            ->get();
+
+        $schedule = [];
+        foreach ($games as $game) {
+            
+        }
+
+        return $schedule;
+    }
 }

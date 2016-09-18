@@ -15,6 +15,16 @@ class NflStat extends Model
         'week', 'player_id', 'team_id', 'td', 'fg', 'two', 'xp', 'diff',
     ];
 
+    public function player()
+    {
+        $this->belongsTo(NflPlayer::class, 'player_id');
+    }
+
+    public function team()
+    {
+        $this->belongsTo(NflTeam::class, 'team_id');
+    }
+
     public static function updateOrCreate($week, $type, $id, $data)
     {
         if ($type == 'team') {
