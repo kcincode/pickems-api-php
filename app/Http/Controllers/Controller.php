@@ -70,4 +70,9 @@ class Controller extends BaseController
     {
         return is_numeric($data);
     }
+
+    private function validateQueryParamArray($data)
+    {
+        return is_array($data);
+    }
 }

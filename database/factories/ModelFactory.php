@@ -1,4 +1,5 @@
 <?php
+$abbrs = ['ARI','ATL','BAL','BUF','CAR','CHI','CIN','CLE','DAL','DEN','DET','GB','HOU','IND','JAX','KC','MIA','MIN','NE','NO','NYG','NYJ','OAK','PHI','PIT','SD','SEA','SF','LA','TB','TEN','WAS'];
 
 /*
 |--------------------------------------------------------------------------
@@ -45,19 +46,17 @@ $factory->define(Pickems\Models\NflGame::class, function (Faker\Generator $faker
         'eid' => $eid,
         'gsis' => md5($eid),
         'home_team_id' => function() {
-            return factory(Pickems\Models\NflTeam::class)->create()->id;
+            return factory(Pickems\Models\NflTeam::class)->create()->abbr;
         },
         'away_team_id' => function() {
-            return factory(Pickems\Models\NflTeam::class)->create()->id;
+            return factory(Pickems\Models\NflTeam::class)->create()->abbr;
         },
         'winning_team_id' => null,
         'losing_team_id' => null,
     ];
 });
 
-$factory->define(Pickems\Models\NflTeam::class, function (Faker\Generator $faker) {
-    $abbrs = ['ARI','ATL','BAL','BUF','CAR','CHI','CIN','CLE','DAL','DEN','DET','GB','HOU','IND','JAX','KC','MIA','MIN','NE','NO','NYG','NYJ','OAK','PHI','PIT','SD','SEA','SF','LA','TB','TEN','WAS'];
-
+$factory->define(Pickems\Models\NflTeam::class, function (Faker\Generator $faker) use ($abbrs) {
     return [
         'abbr' => $faker->unique()->randomElement($abbrs),
         'conference' => $faker->randomElement(['NFC', 'AFC']),
@@ -70,7 +69,7 @@ $factory->define(Pickems\Models\NflPlayer::class, function (Faker\Generator $fak
     $profile = $faker->numberBetween($min = 00000, $max = 99999);
     return [
         'team_id' => function() {
-            return factory(Pickems\Models\NflTeam::class)->create()->id;
+            return factory(Pickems\Models\NflTeam::class)->create()->abbr;
         },
         'gsis_id' => md5($profile),
         'profile_id' => '00-'.$profile,
@@ -83,15 +82,16 @@ $factory->define(Pickems\Models\NflPlayer::class, function (Faker\Generator $fak
 
 $factory->define(Pickems\Models\TeamPick::class, function (Faker\Generator $faker) {
     $isValid = $faker->boolean;
+    $week = $faker->numberBetween($min = 1, $max = 17);
 
     return [
         'team_id' => function() {
             return factory(Pickems\Models\Team::class)->create()->id;
         },
-        'week' => $faker->numberBetween($min = 1, $max = 17),
+        'week' => $week,
         'number' => 1,
-        'nfl_stat_id' => function() {
-            return factory(Pickems\Models\NflStat::class)->create()->id;
+        'nfl_stat_id' => function() use ($week) {
+            return factory(Pickems\Models\NflStat::class)->create(['week' => $week])->id;
         },
         'playmaker' => $faker->boolean,
         'valid' => $isValid,
@@ -106,10 +106,10 @@ $factory->define(Pickems\Models\NflStat::class, function (Faker\Generator $faker
     return [
         'week' => $faker->numberBetween($min = 1, $max = 17),
         'player_id' => function() use ($type) {
-            return ($type == 'player') ? factory(Pickems\Models\NflPlayer::class)->create()->id : null;
+            return ($type == 'player') ? factory(Pickems\Models\NflPlayer::class)->create()->gsis_id : null;
         },
         'team_id' => function() use ($type) {
-            return ($type == 'team') ? factory(Pickems\Models\NflTeam::class)->create()->id : null;
+            return ($type == 'team') ? factory(Pickems\Models\NflTeam::class)->create()->abbr : null;
         },
         'td' => ($type == 'player') ? $faker->numberBetween($min = 0, $max = 3) : 0,
         'fg' => ($type == 'player') ? $faker->numberBetween($min = 0, $max = 3) : 0,

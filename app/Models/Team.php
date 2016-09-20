@@ -61,7 +61,7 @@ class Team extends Model
         ];
     }
 
-    public function calculatePicksLeft()
+    public function validatePicks()
     {
         $teamsPicked = [];
 
@@ -76,21 +76,44 @@ class Team extends Model
         ];
 
         foreach($this->teamPicks as $teamPick) {
-            if (!$teamPick->valid) {
+            if (!$teamPick->nfl_stat) {
                 continue;
             }
 
             if ($teamPick->nfl_stat->player_id) {
                 $pick = $teamPick->nfl_stat->player;
-                // player pick
-                $picksLeft[$pick->position]--;
-                $teamsPicked[] = $pick->team->abbr;
+
+                // check playmaker
+                if ($teamPick->playmaker && $picksLeft['playmakers'] <= 0) {
+                    // error in pick
+                    $pick->valid = false;
+                    $pick->reason = 'You have already used your playmakers';
+                } else if ($picksLeft[$pick->position] <= 0) {
+                    // error in pick
+                    $pick->valid = false;
+                    $pick->reason = 'You have already picked all players from the position '.$pick->position;
+                } else if (in_array($pick->team->abbr, $teamsPicked)) {
+                    $pick->valid = false;
+                    $pick->reason = 'You have already picked a player from the team '.$pick->team->abbr;
+                } else {
+                    // player pick
+                    $picksLeft[$pick->position]--;
+                    $teamsPicked[] = $pick->team->abbr;
+                }
             } else {
                 $pick = $teamPick->nfl_stat->team;
-                // team pick
-                $picksLeft[$pick->team->conference]--;
 
+                if ($picksLeft[$pick->conference] <= 0) {
+                    // error in pick
+                    $pick->valid = false;
+                    $pick->reason = 'You have already picked a team from the conference '.$pick->conference;
+                } else {
+                    // team pick
+                    $picksLeft[$pick->conference]--;
+                }
             }
+
+            $pick->save();
         }
 
         // calculate all teams picked status

@@ -16,7 +16,7 @@ class CreateNflStatsTable extends Migration
         Schema::create('nfl_stats', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('week');
-            $table->integer('player_id')->unsigned()->nullable();
+            $table->string('player_id', 15)->nullable();
             $table->string('team_id', 5)->nullable();
             $table->integer('td')->default(0);
             $table->integer('fg')->default(0);

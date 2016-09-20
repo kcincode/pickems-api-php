@@ -24,6 +24,9 @@ class CreateTeamPicksTable extends Migration
             $table->string('reason')->nullable();
             $table->datetime('picked_at');
             $table->timestamps();
+
+            $table->foreign('team_id')->references('id')->on('teams')->onDelete('cascade');
+            $table->foreign('nfl_stat_id')->references('id')->on('nfl_stats')->onDelete('cascade');
         });
     }
 
