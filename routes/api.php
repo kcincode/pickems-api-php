@@ -22,3 +22,6 @@ Route::post('/token', 'AuthController@token');
 Route::resource('users', 'UsersController', ['except' => ['create', 'edit']]);
 
 Route::resource('teams', 'TeamsController', ['except' => ['create', 'edit']]);
+
+Route::get('picks', 'PicksController@picks');
+Route::post('picks', 'PicksController@postPicks');

@@ -40,4 +40,39 @@ class Controller extends BaseController
         // return the resource and code
         return response()->json($manager->createData($resource)->toArray(), $code);
     }
+
+    public function validateQueryParams($request, $expectedParams)
+    {
+        $filteredParams = [];
+        $params = $request->all();
+
+        foreach ($expectedParams as $param => $paramType) {
+            $method = 'validateQueryParam'.ucfirst($paramType);
+            if (isset($params[$param]) and call_user_func_array([$this, $method], [$params[$param]])) {
+                $filteredParams[$param] = $this->castData($params[$param], $paramType);
+            }
+        }
+
+        return $filteredParams;
+    }
+
+    private function castData($data, $type)
+    {
+        switch($type) {
+            case 'integer':
+                return (int) $data;
+            default:
+                return $data;
+        }
+    }
+
+    private function validateQueryParamInteger($data)
+    {
+        return is_numeric($data);
+    }
+
+    private function validateQueryParamArray($data)
+    {
+        return is_array($data);
+    }
 }
