@@ -42,7 +42,6 @@ class PickemsFetch extends Command
     {
         list($type, $week) = explode('-', NflGame::currentWeek());
 
-
         // don't fetch anything
         if ($week == 1 && $type == 'REG') {
             $this->info('No stats to fetch yet');
@@ -92,7 +91,7 @@ class PickemsFetch extends Command
             if (array_key_exists('winning_team_id', $stat)) {
                 // find the game
                 $game = NflGame::where('eid', '=', $stat['eid'])->first();
-
+                
                 // update team winner and loser
                 $game->winning_team_id = $stat['winning_team_id'];
                 $game->losing_team_id = $stat['losing_team_id'];
@@ -104,11 +103,10 @@ class PickemsFetch extends Command
             NflStat::updateOrCreate($week, 'team', $stat['away_team_id'], $stat['awaydiff']);
 
             // create/update all the player stats
-            foreach ($stat['stats'] as $playerGsis => $playerStat) {
-                NflStat::updateOrCreate($week, 'player', $playerGsis, $playerStat);
+            foreach ($stat['stats'] as $playerGsisId => $playerStat) {
+                // var_dump($playerGsisId, $playerStat);
+                NflStat::updateOrCreate($week, 'player', $playerGsisId, $playerStat);
             }
-
-
         }
     }
 }

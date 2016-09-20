@@ -15,18 +15,15 @@ class CreateTeamPicksTable extends Migration
     {
         Schema::create('team_picks', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('team_id')->unsigned();
+            $table->integer('team_id')->unsigned()->references('id')->on('teams')->onDelete('cascade');
             $table->integer('week')->unsigned();
             $table->integer('number')->unsigned();
-            $table->integer('nfl_stat_id')->unsigned();
+            $table->integer('nfl_stat_id')->unsigned()->references('id')->on('nfl_stats')->onDelete('cascade');
             $table->boolean('playmaker')->default(false);
             $table->boolean('valid')->default(true);
             $table->string('reason')->nullable();
             $table->datetime('picked_at');
             $table->timestamps();
-
-            $table->foreign('team_id')->references('id')->on('teams')->onDelete('cascade');
-            $table->foreign('nfl_stat_id')->references('id')->on('nfl_stats')->onDelete('cascade');
         });
     }
 

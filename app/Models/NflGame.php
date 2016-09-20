@@ -2,6 +2,7 @@
 
 namespace Pickems\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class NflGame extends Model
@@ -45,7 +46,7 @@ class NflGame extends Model
 
     public static function currentWeek()
     {
-        $game = self::where('starts_at', '>=', 'NOW()')->orderBy('starts_at', 'asc')->first();
+        $game = self::where('starts_at', '>=', Carbon::now())->orderBy('starts_at', 'asc')->first();
         if ($game) {
             return $game->type.'-'.$game->week;
         }
@@ -61,7 +62,7 @@ class NflGame extends Model
 
         $schedule = [];
         foreach ($games as $game) {
-            
+
         }
 
         return $schedule;

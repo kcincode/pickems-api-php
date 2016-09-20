@@ -269,7 +269,7 @@ class NflScrape
                     }
                 }
 
-                $results[$game->game_id] = $data;
+                $results[$gameId] = $data;
             }
         }
 

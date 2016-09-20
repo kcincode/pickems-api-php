@@ -15,15 +15,13 @@ class CreateNflPlayersTable extends Migration
     {
         Schema::create('nfl_players', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('team_id', 5);
+            $table->string('team_id', 5)->references('abbr')->on('nfl_teams')->onDelete('cascade');
             $table->string('gsis_id', 15);
             $table->string('profile_id', 15);
             $table->string('name');
             $table->string('position', 5);
             $table->boolean('active');
             $table->timestamps();
-
-            $table->foreign('team_id')->references('abbr')->on('nfl_teams')->onDelete('cascade');
         });
     }
 
