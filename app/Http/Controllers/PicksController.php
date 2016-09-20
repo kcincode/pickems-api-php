@@ -105,6 +105,7 @@ class PicksController extends Controller
     {
         $validKeys = ['id', 'type', 'playmaker'];
 
+        // make sure each key is present
         foreach ($validKeys as $key) {
             if (!isset($pick[$key])) {
                 return false;
@@ -135,8 +136,10 @@ class PicksController extends Controller
         // update the nfl stat/
         $dbPick->nfl_stat_id = NflStat::updateOrCreate($week, $pick['type'], $pick['id']);
 
-        // TODO: update the picked_at if the pick has changed
-        $dbPick->picked_at = Carbon::now();
+        // update the picked_at if the pick has changed
+        if ($dbPick->isDirty()) {
+            $dbPick->picked_at = Carbon::now();
+        }
 
         // save the pick
         $dbPick->save();
