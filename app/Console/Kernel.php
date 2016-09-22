@@ -15,6 +15,8 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         Commands\PickemsInit::class,
         Commands\PickemsFetch::class,
+        Commands\PickemsStats::class,
+        Commands\PickemsPopulate::class,
     ];
 
     /**

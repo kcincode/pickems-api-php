@@ -171,14 +171,18 @@ class NflScrape
                         $gsis_id = $data['gsis_id'];
                     }
 
-                    $players[] = [
-                        'team_id' => $nflTeam->abbr,
-                        'name' => $matches[3].' '.$matches[2],
-                        'position' => $this->convertPosition($matches[4]),
-                        'profile_id' => $profileMatches[1],
-                        'gsis_id' => $gsis_id,
-                        'active' => true,
-                    ];
+                    $position = $this->convertPosition($matches[4]);
+
+                    if (in_array($position, ['QB', 'RB', 'WRTE', 'K'])) {
+                        $players[] = [
+                            'team_id' => $nflTeam->abbr,
+                            'name' => $matches[3].' '.$matches[2],
+                            'position' => $position,
+                            'profile_id' => $profileMatches[1],
+                            'gsis_id' => $gsis_id,
+                            'active' => true,
+                        ];
+                    }
                 }
             }
         }
