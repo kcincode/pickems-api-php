@@ -17,12 +17,12 @@ class NflStat extends Model
 
     public function player()
     {
-        $this->belongsTo(NflPlayer::class, 'sdfasfd');
+        return $this->belongsTo(NflPlayer::class, 'player_id', 'gsis_id');
     }
 
     public function team()
     {
-        $this->belongsTo(NflTeam::class ,'asdfdsa');
+        return $this->belongsTo(NflTeam::class ,'team_id', 'abbr');
     }
 
     public function points()

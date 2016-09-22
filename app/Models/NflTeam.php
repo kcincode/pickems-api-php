@@ -12,7 +12,7 @@ class NflTeam extends Model
      * @var array
      */
     protected $fillable = [
-        'abbr', 'conference', 'city', 'name',
+        'abbr', 'conference', 'city', 'name', 'wl'
     ];
 
     /**

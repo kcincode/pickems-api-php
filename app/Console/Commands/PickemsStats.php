@@ -2,7 +2,9 @@
 
 namespace Pickems\Console\Commands;
 
+use Pickems\Models\Team;
 use Pickems\Models\NflGame;
+use Pickems\Models\NflTeam;
 use Pickems\Models\TeamPick;
 use Illuminate\Console\Command;
 use Pickems\Models\WeeklyLeader;
@@ -46,8 +48,9 @@ class PickemsStats extends Command
 
         if ($type == 'REG' && $week >= 2) {
             $this->weeklyLeaders($type, $week - 1);
+            $this->teamsWinLoss($type, $week - 1);
             // $this->bestPicks($type, $week - 1);
-            $this->teamScoresAndRankings($type, $week - 1);
+            // $this->teamScoresAndRankings($type, $week - 1);
         }
     }
 
@@ -94,5 +97,50 @@ class PickemsStats extends Command
         $bar->finish();
         $time = number_format(microtime(true) - $start, 2);
         $this->info('    '.$time. ' seconds');
+    }
+
+    public function teamsWinLoss($type, $toWeek)
+    {
+        if ($type == 'POST') {
+            $toWeek = 17;
+        }
+
+        $games = NflGame::where('week', '<=', $toWeek)
+            ->get();
+
+        $teams = NflTeam::all()->pluck('abbr')->toArray();
+        $zeros = array_fill(0, count($teams), ['wins' => 0, 'losses' => 0]);
+        $teamsWinLoss = array_combine($teams, $zeros);
+
+        // set each teams wins and losses
+        foreach($games as $game) {
+            $teamsWinLoss[$game->winning_team_id]['wins']++;
+            $teamsWinLoss[$game->losing_team_id]['losses']++;
+        }
+
+        // apply win/loss to teams
+        foreach(Team::all() as $team) {
+            $pickedTeams = [];
+
+            // fetch teams used
+            foreach($team->teamPicks as $teamPick) {
+                if ($teamPick->nfl_stat->player && $teamPick->week <= $toWeek) {
+                    $pickedTeams[] = $teamPick->nfl_stat->player->team_id;
+                }
+            }
+
+            // fetch w/l on teams remaining
+            $wlData = ['wins' => 0, 'losses' => 0];
+            foreach($teamsWinLoss as $abbr => $data) {
+                if (!in_array($abbr, $pickedTeams)) {
+                    $wlData['wins'] += $data['wins'];
+                    $wlData['losses'] += $data['losses'];
+                }
+            }
+
+            // set the w/l ratio
+            $team->wl = number_format($wlData['wins'] / $wlData['losses'], 3);
+            $team->save();
+        }
     }
 }
