@@ -15,6 +15,11 @@ class NflTeam extends Model
         'abbr', 'conference', 'city', 'name', 'wl'
     ];
 
+    public function display()
+    {
+        return $this->city.' '.$this->name.'-'.$this->conference;
+    }
+
     /**
      * Returns either the fetched nfl team by the abbr or if
      * it does not find the team it will create one

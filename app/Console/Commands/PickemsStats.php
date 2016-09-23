@@ -5,6 +5,8 @@ namespace Pickems\Console\Commands;
 use Pickems\Models\Team;
 use Pickems\Models\NflGame;
 use Pickems\Models\NflTeam;
+use Pickems\Models\NflStat;
+use Pickems\Models\BestPick;
 use Pickems\Models\TeamPick;
 use Illuminate\Console\Command;
 use Pickems\Models\WeeklyLeader;
@@ -175,6 +177,100 @@ class PickemsStats extends Command
 
             $team->playoffs = $playoffPoints;
             $team->save();
+        }
+    }
+
+    private function bestPicks($type, $toWeek)
+    {
+        if ($type == 'POST') {
+            $toWeek = 17;
+        }
+
+        // clear the table
+        DB::table('best_picks')->truncate();
+
+        $stats = NflStat::where('week', '<=',  $toWeek)
+            ->get();
+
+        $allStats = [];
+        foreach($stats as $stat) {
+            $allStats[] = [
+                'week' => $stat->week,
+                'pick' => ($stat->player_id) ? $stat->player->display() : $stat->team->display(),
+                'position' => ($stat->player_id) ? $stat->player->position : null,
+                'team' => ($stat->player_id) ? $stat->player->team->abbr : null,
+                'conference' => ($stat->team_id) ? $stat->team->conference : null,
+                'points' => $stat->points(),
+                'playmaker' => false,
+            ];
+        }
+
+        // sort by points
+        usort($allStats, function($a, $b) {
+            return ($a['points'] > $b['points']) ? -1 : 1;
+        });
+
+        $picks = [];
+        $picksLeft = [
+            'QB' => 8,
+            'RB' => 8,
+            'WRTE' => 8,
+            'K' => 8,
+            'playmakers' => 2,
+            'AFC' => 1,
+            'NFC' => 1,
+            'teams' => [],
+        ];
+
+        // genereate picks
+        foreach($allStats as $stat) {
+            if (isset($picks[$stat['week']]) && count($picks[$stat['week']]) == 2) {
+                // already have 2 picks
+                continue;
+            } else if (!isset($picks[$stat['week']])) {
+                // initialize week
+                $picks[$stat['week']] = [];
+            }
+
+            if (!empty($stat['team'])) {
+                // player valid pick
+                if ($picksLeft[$stat['position']] > 0 && !in_array($stat['team'], $picksLeft['teams'])){
+                    // playmaker?
+                    if ($picksLeft['playmakers'] > 0) {
+                        $picksLeft['playmakers']--;
+                        $stat['points'] *= 2;
+                        $stat['playmaker'] = true;
+                    }
+
+                    // update the counts
+                    $picksLeft[$stat['position']]--;
+                    $picksLeft['teams'][] = $stat['team'];
+
+                    // set pick
+                    $picks[$stat['week']][] = $stat;
+                }
+            } else {
+                // team pick
+                if ($picksLeft[$stat['conference']] > 0) {
+                    // update the counts
+                    $picksLeft[$stat['conference']]--;
+
+                    // set pick
+                    $picks[$stat['week']][] = $stat;
+                }
+            }
+        }
+
+        foreach($picks as $week => $pick) {
+            BestPick::create([
+                'week' => $week,
+                'pick1' => $pick[0]['pick'],
+                'pick1_points' => $pick[0]['points'],
+                'pick1_playmaker' => $pick[0]['playmaker'],
+                'pick2' => $pick[1]['pick'],
+                'pick2_points' => $pick[1]['points'],
+                'pick2_playmaker' => $pick[1]['playmaker'],
+            ]);
         }
     }
 }
