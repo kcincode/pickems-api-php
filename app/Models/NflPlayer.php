@@ -15,6 +15,16 @@ class NflPlayer extends Model
         'team_id', 'gsis_id', 'profile_id', 'name', 'position', 'active'
     ];
 
+    public function team()
+    {
+        return $this->belongsTo(NflTeam::class, 'team_id', 'abbr');
+    }
+
+    public function display()
+    {
+        return $this->name.'-'.$this->team->abbr.'-'.$this->position;
+    }
+
     /**
      * Returns either the fetched nfl player by the gsis id and active
      * flag and if it does not find the player it will create one.  It

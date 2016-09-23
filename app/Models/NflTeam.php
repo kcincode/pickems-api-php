@@ -12,8 +12,13 @@ class NflTeam extends Model
      * @var array
      */
     protected $fillable = [
-        'abbr', 'conference', 'city', 'name',
+        'abbr', 'conference', 'city', 'name', 'wl'
     ];
+
+    public function display()
+    {
+        return $this->city.' '.$this->name.'-'.$this->conference;
+    }
 
     /**
      * Returns either the fetched nfl team by the abbr or if

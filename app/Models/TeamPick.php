@@ -26,4 +26,15 @@ class TeamPick extends Model
     {
         return $this->belongsTo(NflStat::class, 'nfl_stat_id');
     }
+
+    public function points()
+    {
+        if ($this->nfl_stat_id) {
+            $multiplier = ($this->playmaker) ? 2 : 1;
+
+            return $this->nfl_stat->points() * $multiplier;
+        }
+
+        return 0;
+    }
 }

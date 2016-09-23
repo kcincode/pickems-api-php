@@ -17,12 +17,17 @@ class NflStat extends Model
 
     public function player()
     {
-        $this->belongsTo(NflPlayer::class, 'sdfasfd');
+        return $this->belongsTo(NflPlayer::class, 'player_id', 'gsis_id');
     }
 
     public function team()
     {
-        $this->belongsTo(NflTeam::class ,'asdfdsa');
+        return $this->belongsTo(NflTeam::class ,'team_id', 'abbr');
+    }
+
+    public function points()
+    {
+        return ($this->td * 6) + ($this->fg * 3) + ($this->two * 2) + $this->xp + $this->diff;
     }
 
     public static function updateOrCreate($week, $type, $id, $data = null)
@@ -54,13 +59,13 @@ class NflStat extends Model
                 return null;
             }
 
-            $stat = self::where('player_id', '=', $player->id)
+            $stat = self::where('player_id', '=', $player->gsis_id)
                 ->where('week', '=', $week)
                 ->first();
 
             if (!$stat) {
                 $data['week'] = $week;
-                $data['player_id'] = $player->id;
+                $data['player_id'] = $player->gsis_id;
                 // create a new stat
                 $stat = self::create($data);
             } else if($data) {

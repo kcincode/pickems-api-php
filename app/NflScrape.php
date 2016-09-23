@@ -106,10 +106,14 @@ class NflScrape
                     $winningTeam = null;
                     $losingTeam = null;
 
+                    // reset JAC to JAX
+                    $homeTeam = ($game->{'@attributes'}->h == 'JAC') ? 'JAX' : $game->{'@attributes'}->h;
+                    $awayTeam = ($game->{'@attributes'}->v == 'JAC') ? 'JAX' : $game->{'@attributes'}->v;
+
                     // if there is a score and its not tied
                     if (is_numeric($homeScore) && is_numeric($awayScore) && $homeScore != $awayScore) {
-                        $winningTeam = ($homeScore > $awayScore) ? $game->{'@attributes'}->h : $game->{'@attributes'}->v;
-                        $losingTeam = ($homeScore > $awayScore) ? $game->{'@attributes'}->v : $game->{'@attributes'}->h;
+                        $winningTeam = ($homeScore > $awayScore) ? $homeTeam : $awayTeam;
+                        $losingTeam = ($homeScore > $awayScore) ? $awayTeam : $homeTeam;
                     }
 
                     $results[] = [
@@ -118,8 +122,8 @@ class NflScrape
                         'type' => $type,
                         'eid' => $game->{'@attributes'}->eid,
                         'gsis' => $game->{'@attributes'}->gsis,
-                        'home_team_id' => $game->{'@attributes'}->h,
-                        'away_team_id' => $game->{'@attributes'}->v,
+                        'home_team_id' => $homeTeam,
+                        'away_team_id' => $awayTeam,
                         'winning_team_id' => $winningTeam,
                         'losing_team_id' => $losingTeam,
                     ];
@@ -171,14 +175,18 @@ class NflScrape
                         $gsis_id = $data['gsis_id'];
                     }
 
-                    $players[] = [
-                        'team_id' => $nflTeam->abbr,
-                        'name' => $matches[3].' '.$matches[2],
-                        'position' => $this->convertPosition($matches[4]),
-                        'profile_id' => $profileMatches[1],
-                        'gsis_id' => $gsis_id,
-                        'active' => true,
-                    ];
+                    $position = $this->convertPosition($matches[4]);
+
+                    if (in_array($position, ['QB', 'RB', 'WRTE', 'K'])) {
+                        $players[] = [
+                            'team_id' => $nflTeam->abbr,
+                            'name' => $matches[3].' '.$matches[2],
+                            'position' => $position,
+                            'profile_id' => $profileMatches[1],
+                            'gsis_id' => $gsis_id,
+                            'active' => true,
+                        ];
+                    }
                 }
             }
         }
@@ -235,8 +243,8 @@ class NflScrape
             $data = [];
             if (!empty($page->$gameId)) {
                 $data['eid'] = $gameId;
-                $data['home_team_id'] = $page->$gameId->home->abbr;
-                $data['away_team_id'] = $page->$gameId->away->abbr;
+                $data['home_team_id'] = ($page->$gameId->home->abbr == 'JAC') ? 'JAX' : $page->$gameId->home->abbr;
+                $data['away_team_id'] = ($page->$gameId->away->abbr == 'JAC') ? 'JAX' : $page->$gameId->away->abbr;
                 $data['homescore'] = $page->$gameId->home->score->T;
                 $data['awayscore'] = $page->$gameId->away->score->T;
                 $data['homediff'] = $page->$gameId->home->score->T - $page->$gameId->away->score->T;
