@@ -49,13 +49,17 @@ class PickemsStats extends Command
         if ($type == 'REG' && $week >= 2) {
             $this->weeklyLeaders($type, $week - 1);
             $this->teamsWinLoss($type, $week - 1);
-            // $this->bestPicks($type, $week - 1);
-            // $this->teamScoresAndRankings($type, $week - 1);
+            $this->teamScores($type, $week - 1);
+            $this->bestPicks($type, $week - 1);
         }
     }
 
     private function weeklyLeaders($type, $toWeek)
     {
+        if ($type == 'POST') {
+            $toWeek = 17;
+        }
+
         // clear the table
         DB::table('weekly_leaders')->truncate();
 
@@ -99,7 +103,7 @@ class PickemsStats extends Command
         $this->info('    '.$time. ' seconds');
     }
 
-    public function teamsWinLoss($type, $toWeek)
+    private function teamsWinLoss($type, $toWeek)
     {
         if ($type == 'POST') {
             $toWeek = 17;
@@ -140,6 +144,36 @@ class PickemsStats extends Command
 
             // set the w/l ratio
             $team->wl = number_format($wlData['wins'] / $wlData['losses'], 3);
+            $team->save();
+        }
+    }
+
+    private function teamScores($type, $toWeek)
+    {
+        if ($type == 'POST') {
+            $toWeek = 17;
+        }
+
+        // apply win/loss to teams
+        foreach(Team::all() as $team) {
+            $points = 0;
+            // fetch teams used
+            foreach($team->teamPicks as $teamPick) {
+                // only calculate points for valid picks
+                if ($teamPick->valid && $teamPick->week <= $toWeek) {
+                    $points += $teamPick->points();
+                }
+            }
+
+            // update the points
+            $team->points = $points;
+
+            $playoffPoints = 0;
+            if ($type == 'POST') {
+                // TODO: Playoff picks
+            }
+
+            $team->playoffs = $playoffPoints;
             $team->save();
         }
     }
