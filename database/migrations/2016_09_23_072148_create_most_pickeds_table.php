@@ -15,6 +15,7 @@ class CreateMostPickedsTable extends Migration
     {
         Schema::create('most_picked', function (Blueprint $table) {
             $table->increments('id');
+            $table->string('type');
             $table->integer('week')->unsigned();
             $table->string('name');
             $table->integer('number_picked')->unsigned();

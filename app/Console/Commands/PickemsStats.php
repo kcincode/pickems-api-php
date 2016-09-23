@@ -51,15 +51,16 @@ class PickemsStats extends Command
 
         if ($type == 'REG' && $week >= 2) {
             $this->weeklyLeaders($type, $week - 1);
-            $this->teamsWinLoss($type, $week - 1);
-            $this->teamScores($type, $week - 1);
-            $this->bestPicks($type, $week - 1);
-            $this->mostPicked($type, $week - 1);
+            // $this->teamsWinLoss($type, $week - 1);
+            // $this->teamScores($type, $week - 1);
+            // $this->bestPicks($type, $week - 1);
+            // $this->mostPicked($type, $week - 1);
         }
     }
 
     private function weeklyLeaders($type, $toWeek)
     {
+        $this->info("Calculating weekly leaders:");
         if ($type == 'POST') {
             $toWeek = 17;
         }
@@ -105,6 +106,10 @@ class PickemsStats extends Command
         $bar->finish();
         $time = number_format(microtime(true) - $start, 2);
         $this->info('    '.$time. ' seconds');
+
+        if ($type == 'POST') {
+            // TODO: Playoff weekly leaders
+        }
     }
 
     private function teamsWinLoss($type, $toWeek)
@@ -113,21 +118,29 @@ class PickemsStats extends Command
             $toWeek = 17;
         }
 
+        $teams = Team::all();
+        $bar = $this->output->createProgressBar(count($teams) + 3);
+        $start = microtime(true);
+
         $games = NflGame::where('week', '<=', $toWeek)
             ->get();
+        $bar->advance();
+
 
         $teams = NflTeam::all()->pluck('abbr')->toArray();
         $zeros = array_fill(0, count($teams), ['wins' => 0, 'losses' => 0]);
         $teamsWinLoss = array_combine($teams, $zeros);
+        $bar->advance();
 
         // set each teams wins and losses
         foreach($games as $game) {
             $teamsWinLoss[$game->winning_team_id]['wins']++;
             $teamsWinLoss[$game->losing_team_id]['losses']++;
         }
+        $bar->advance();
 
         // apply win/loss to teams
-        foreach(Team::all() as $team) {
+        foreach($teams as $team) {
             $pickedTeams = [];
 
             // fetch teams used
@@ -149,7 +162,12 @@ class PickemsStats extends Command
             // set the w/l ratio
             $team->wl = number_format($wlData['wins'] / $wlData['losses'], 3);
             $team->save();
+            $bar->advance();
         }
+
+        $bar->finish();
+        $time = number_format(microtime(true) - $start, 2);
+        $this->info('    '.$time. ' seconds');
     }
 
     private function teamScores($type, $toWeek)
@@ -265,6 +283,7 @@ class PickemsStats extends Command
 
         foreach($picks as $week => $pick) {
             BestPick::create([
+                'type' => 'REG',
                 'week' => $week,
                 'pick1' => $pick[0]['pick'],
                 'pick1_points' => $pick[0]['points'],
@@ -273,6 +292,10 @@ class PickemsStats extends Command
                 'pick2_points' => $pick[1]['points'],
                 'pick2_playmaker' => $pick[1]['playmaker'],
             ]);
+        }
+
+        if ($type == 'POST') {
+            // TODO: Playoff best picks
         }
     }
 
@@ -327,6 +350,10 @@ class PickemsStats extends Command
                     'number_picked' => $item['numpicked']
                 ]);
             }
+        }
+
+        if ($type == 'POST') {
+            // TODO: Most picked in playoffs
         }
     }
 }

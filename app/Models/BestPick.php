@@ -12,6 +12,7 @@ class BestPick extends Model
      * @var array
      */
     protected $fillable = [
+        'type', 
         'week',
         'pick1',
         'pick1_points',

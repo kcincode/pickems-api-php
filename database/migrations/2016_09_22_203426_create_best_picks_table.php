@@ -15,6 +15,7 @@ class CreateBestPicksTable extends Migration
     {
         Schema::create('best_picks', function (Blueprint $table) {
             $table->increments('id');
+            $table->string('type');
             $table->integer('week')->unsigned();
             $table->string('pick1');
             $table->integer('pick1_points')->unsigned();
