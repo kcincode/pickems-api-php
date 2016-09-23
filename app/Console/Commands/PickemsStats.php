@@ -51,10 +51,10 @@ class PickemsStats extends Command
 
         if ($type == 'REG' && $week >= 2) {
             $this->weeklyLeaders($type, $week - 1);
-            // $this->teamsWinLoss($type, $week - 1);
-            // $this->teamScores($type, $week - 1);
-            // $this->bestPicks($type, $week - 1);
-            // $this->mostPicked($type, $week - 1);
+            $this->teamsWinLoss($type, $week - 1);
+            $this->teamScores($type, $week - 1);
+            $this->bestPicks($type, $week - 1);
+            $this->mostPicked($type, $week - 1);
         }
     }
 
@@ -114,11 +114,12 @@ class PickemsStats extends Command
 
     private function teamsWinLoss($type, $toWeek)
     {
+        $this->info("Calculating team win loss ratios:");
         if ($type == 'POST') {
             $toWeek = 17;
         }
 
-        $teams = Team::all();
+        $teams = NflTeam::all()->pluck('abbr')->toArray();
         $bar = $this->output->createProgressBar(count($teams) + 3);
         $start = microtime(true);
 
@@ -126,8 +127,6 @@ class PickemsStats extends Command
             ->get();
         $bar->advance();
 
-
-        $teams = NflTeam::all()->pluck('abbr')->toArray();
         $zeros = array_fill(0, count($teams), ['wins' => 0, 'losses' => 0]);
         $teamsWinLoss = array_combine($teams, $zeros);
         $bar->advance();
@@ -140,7 +139,7 @@ class PickemsStats extends Command
         $bar->advance();
 
         // apply win/loss to teams
-        foreach($teams as $team) {
+        foreach(Team::all() as $team) {
             $pickedTeams = [];
 
             // fetch teams used
@@ -172,12 +171,17 @@ class PickemsStats extends Command
 
     private function teamScores($type, $toWeek)
     {
+        $this->info("Calculating team scores:");
         if ($type == 'POST') {
             $toWeek = 17;
         }
 
+        $teams = Team::all();
+        $bar = $this->output->createProgressBar(count($teams));
+        $start = microtime(true);
+
         // apply win/loss to teams
-        foreach(Team::all() as $team) {
+        foreach($teams as $team) {
             $points = 0;
             // fetch teams used
             foreach($team->teamPicks as $teamPick) {
@@ -197,20 +201,29 @@ class PickemsStats extends Command
 
             $team->playoffs = $playoffPoints;
             $team->save();
+            $bar->advance();
         }
+
+        $bar->finish();
+        $time = number_format(microtime(true) - $start, 2);
+        $this->info('    '.$time. ' seconds');
     }
 
     private function bestPicks($type, $toWeek)
     {
+        $this->info('Calculating best picks:');
         if ($type == 'POST') {
             $toWeek = 17;
         }
 
-        // clear the table
-        DB::table('best_picks')->truncate();
-
         $stats = NflStat::where('week', '<=',  $toWeek)
             ->get();
+
+        $bar = $this->output->createProgressBar((count($stats) * 2) + 2);
+        $start = microtime(true);
+
+        // clear the table
+        DB::table('best_picks')->truncate();
 
         $allStats = [];
         foreach($stats as $stat) {
@@ -223,12 +236,15 @@ class PickemsStats extends Command
                 'points' => $stat->points(),
                 'playmaker' => false,
             ];
+
+            $bar->advance();
         }
 
         // sort by points
         usort($allStats, function($a, $b) {
             return ($a['points'] > $b['points']) ? -1 : 1;
         });
+        $bar->advance();
 
         $picks = [];
         $picksLeft = [
@@ -279,6 +295,7 @@ class PickemsStats extends Command
                     $picks[$stat['week']][] = $stat;
                 }
             }
+            $bar->advance();
         }
 
         foreach($picks as $week => $pick) {
@@ -293,6 +310,12 @@ class PickemsStats extends Command
                 'pick2_playmaker' => $pick[1]['playmaker'],
             ]);
         }
+        $bar->advance();
+
+        $bar->finish();
+        $time = number_format(microtime(true) - $start, 2);
+        $this->info('    '.$time. ' seconds');
+
 
         if ($type == 'POST') {
             // TODO: Playoff best picks
@@ -301,14 +324,18 @@ class PickemsStats extends Command
 
     private function mostPicked($type, $toWeek)
     {
+        $this->info('Calculating the most picked:');
         if ($type == 'POST') {
             $toWeek = 17;
         }
 
-        // clear the table
-        DB::table('most_picked')->truncate();
         $teamPicks = TeamPick::where('week', '<=', $toWeek)
             ->get();
+        $bar = $this->output->createProgressBar(count($teamPicks) * 2);
+        $start = microtime(true);
+
+        // clear the table
+        DB::table('most_picked')->truncate();
 
         $picked = [];
         foreach($teamPicks as $teamPick) {
@@ -330,6 +357,7 @@ class PickemsStats extends Command
             } else {
                 $picked[$teamPick->week][$key]['numpicked'] += 1;
             }
+            $bar->advance();
         }
 
         // genereate text with all picks > 1
@@ -345,12 +373,18 @@ class PickemsStats extends Command
                 }
 
                 MostPicked::create([
+                    'type' => 'REG',
                     'week' => $week,
                     'name' => $item['name'],
                     'number_picked' => $item['numpicked']
                 ]);
             }
+            $bar->advance();
         }
+
+        $bar->finish();
+        $time = number_format(microtime(true) - $start, 2);
+        $this->info('    '.$time. ' seconds');
 
         if ($type == 'POST') {
             // TODO: Most picked in playoffs
