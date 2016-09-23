@@ -8,6 +8,7 @@ use Pickems\Models\NflTeam;
 use Pickems\Models\NflStat;
 use Pickems\Models\BestPick;
 use Pickems\Models\TeamPick;
+use Pickems\Models\MostPicked;
 use Illuminate\Console\Command;
 use Pickems\Models\WeeklyLeader;
 use Illuminate\Support\Facades\DB;
@@ -53,6 +54,7 @@ class PickemsStats extends Command
             $this->teamsWinLoss($type, $week - 1);
             $this->teamScores($type, $week - 1);
             $this->bestPicks($type, $week - 1);
+            $this->mostPicked($type, $week - 1);
         }
     }
 
@@ -271,6 +273,60 @@ class PickemsStats extends Command
                 'pick2_points' => $pick[1]['points'],
                 'pick2_playmaker' => $pick[1]['playmaker'],
             ]);
+        }
+    }
+
+    private function mostPicked($type, $toWeek)
+    {
+        if ($type == 'POST') {
+            $toWeek = 17;
+        }
+
+        // clear the table
+        DB::table('most_picked')->truncate();
+        $teamPicks = TeamPick::where('week', '<=', $toWeek)
+            ->get();
+
+        $picked = [];
+        foreach($teamPicks as $teamPick) {
+            if ($teamPick->nfl_stat->player_id) {
+                $type = 'player';
+                $key = $teamPick->nfl_stat->player_id;
+                $name = $teamPick->nfl_stat->player->display();
+            } else {
+                $type = 'team';
+                $key = $teamPick->nfl_stat->team_id;
+                $name = $teamPick->nfl_stat->team->display();
+            }
+
+            if (!isset($picked[$teamPick->week][$key])) {
+                $picked[$teamPick->week][$key] = [
+                    'name' => $name,
+                    'numpicked' => 1,
+                ];
+            } else {
+                $picked[$teamPick->week][$key]['numpicked'] += 1;
+            }
+        }
+
+        // genereate text with all picks > 1
+        $mostPicked = [];
+        foreach ($picked as $week => $data) {
+            usort($data, function($a, $b) {
+                return ($a['numpicked'] > $b['numpicked']) ? -1 : 1;
+            });
+
+            foreach($data as $item) {
+                if ($item['numpicked'] < 2) {
+                    break;
+                }
+
+                MostPicked::create([
+                    'week' => $week,
+                    'name' => $item['name'],
+                    'number_picked' => $item['numpicked']
+                ]);
+            }
         }
     }
 }
