@@ -16,6 +16,10 @@ class Team extends Model
         'user_id', 'name', 'paid', 'points', 'playoffs', 'wl',
     ];
 
+    protected $casts = [
+        'paid' => 'boolean',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);

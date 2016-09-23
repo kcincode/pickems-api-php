@@ -29,7 +29,7 @@ $factory->define(Pickems\Models\Team::class, function (Faker\Generator $faker) {
             return factory(Pickems\Models\User::class)->create()->id;
         },
         'name' => $faker->company,
-        'paid' => false,
+        'paid' => $faker->boolean,
         'points' => $faker->numberBetween($min = 100, $max = 700),
         'playoffs' => $faker->numberBetween($min = 50, $max = 300),
         'wl' => $faker->randomFloat($nbMaxDecimals = 3, $min = 0, $max = 1),

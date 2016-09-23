@@ -217,7 +217,7 @@ class TeamsTest extends TestCase
     {
         // create a user and get token for the user
         $user = factory(User::class)->create(['role' => 'admin']);
-        $team = factory(Team::class)->create();
+        $team = factory(Team::class)->create(['paid' => false]);
 
         $patchData = [
             'data' => [
@@ -225,7 +225,7 @@ class TeamsTest extends TestCase
                 'id' => $team->id,
                 'attributes' => [
                     'name' => 'mod '.$team->name,
-                    'paid' => false
+                    'paid' => true
                 ],
                 'relationships' => [
                     'user' => [
@@ -256,7 +256,7 @@ class TeamsTest extends TestCase
 
     public function testAuthorizedNonAdminPatchRequest()
     {
-        $team = factory(Team::class)->create();
+        $team = factory(Team::class)->create(['paid' => false]);
 
         $patchData = [
             'data' => [
@@ -427,7 +427,7 @@ class TeamsTest extends TestCase
                 'type' => 'teams',
                 'id' => $team->id,
                 'attributes' => [
-                    'name' => $team->name,
+                    'name' => 'Homygod',
                     'paid' => false,
                 ],
                 'relationships' => [
@@ -450,9 +450,9 @@ class TeamsTest extends TestCase
         $data = json_decode($response->content());
         $this->assertNotEmpty($data, 'it has returned some data');
 
-        // check the attributes
-        foreach ($patchData['data']['attributes'] as $attr => $value) {
-            $this->assertEquals($value, $data->data->attributes->$attr, 'attribute matches whats expected');
-        }
+        // check the db
+        $dbTeam = Team::find($team->id);
+        $this->assertEquals($team->paid, $dbTeam->paid, 'paid attribute is updated');
+        $this->assertEquals('Homygod', $dbTeam->name, 'team name is updated');
     }
 }
