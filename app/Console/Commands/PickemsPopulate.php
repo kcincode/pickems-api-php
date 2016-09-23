@@ -45,14 +45,27 @@ class PickemsPopulate extends Command
      */
     public function handle()
     {
+        $this->info("Populating the database with test data");
+        $bar = $this->output->createProgressBar(31);
+        $start = microtime(true);
+
         // clear users except admin
         $user = User::find(1)->toArray();
         $user['password'] = bcrypt('testing');
         DB::table('users')->truncate();
         User::create($user);
+        $bar->advance();
 
         DB::table('team_picks')->truncate();
+        $bar->advance();
         DB::table('teams')->truncate();
+        $bar->advance();
+        DB::table('weekly_leaders')->truncate();
+        $bar->advance();
+        DB::table('best_picks')->truncate();
+        $bar->advance();
+        DB::table('most_picked')->truncate();
+        $bar->advance();
 
         // create 25 users
         $users = factory(User::class, 25)->create();
@@ -60,7 +73,12 @@ class PickemsPopulate extends Command
             $team = factory(Team::class)->create(['user_id' => $user->id]);
 
             $this->makeRegularSeasonPicks($team->id);
+            $bar->advance();
         }
+
+        $bar->finish();
+        $time = number_format(microtime(true) - $start, 2);
+        $this->info('    '.$time. ' seconds');
     }
 
     private function makeRegularSeasonPicks($teamId)
