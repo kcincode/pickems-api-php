@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\DatabaseMigrations;
 class TeamsTest extends TestCase
 {
     use DatabaseMigrations;
-    protected $attrs = ['name', 'paid', 'points', 'playoffs', 'wl'];
+    protected $attrs = ['name', 'slug', 'paid', 'points', 'playoffs', 'wl'];
     protected $relations = ['user'];
 
     public function testUnauthenticatedGetRequest()

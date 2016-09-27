@@ -17,6 +17,7 @@ class CreateTeamsTable extends Migration
             $table->increments('id');
             $table->integer('user_id')->unsigned()->references('id')->on('users')->onDelete('cascade');
             $table->string('name')->unique();
+            $table->string('slug')->unique();
             $table->boolean('paid')->default(false);
             $table->integer('points')->default(0);
             $table->integer('playoffs')->default(0);

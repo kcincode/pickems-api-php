@@ -25,7 +25,7 @@ class PicksController extends Controller
 
     public function picks(Request $request)
     {
-        $params = $this->validateQueryParams($request, ['team' => 'integer', 'week' => 'integer']);
+        $params = $this->validateQueryParams($request, ['team' => 'string', 'week' => 'integer']);
 
         // make sure there is a team and week specified
         if (!isset($params['team']) or !isset($params['week'])) {
@@ -38,7 +38,7 @@ class PicksController extends Controller
         }
 
         // make sure its a valid team
-        $team = Team::find($params['team']);
+        $team = Team::where('slug', '=', $params['team'])->first();
         if (!$team) {
             return $this->renderError('You must specify a valid team', 400);
         }
@@ -84,6 +84,11 @@ class PicksController extends Controller
         $team = Team::find($params['team']);
         if (!$team) {
             return $this->renderError('You must specify a valid team', 400);
+        }
+
+        // check if the week is not valid
+        if ($params['week'] < NflGame::currentWeekRegularSeason()) {
+            return $this->renderError('You may not submit picks for past weeks after they are finished', 400);
         }
 
         // make sure the pick1 and pick2 are valid picks
@@ -143,5 +148,72 @@ class PicksController extends Controller
 
         // save the pick
         $dbPick->save();
+    }
+
+    public function allPicks($slug)
+    {
+        $team = Team::where('slug', '=', $slug)->first();
+        if (!$team) {
+            return $this->renderError('Invalid team specified', 400);
+        }
+
+        $currentWeek = NflGame::currentWeekRegularSeason();
+
+        $teamPicks = [];
+        $overallTotal = 0;
+        foreach ($team->teamPicks as $teamPick) {
+            if ($teamPick->week >= $currentWeek) {
+                continue;
+            }
+
+            // create the entry if it doesn't exist
+            if (!isset($teamPicks[$teamPick->week])) {
+                $teamPicks[$teamPick->week] = [
+                    'week' => $teamPick->week,
+                    'pick1' => null,
+                    'pick1_points' => 0,
+                    'pick1_playmaker' => false,
+                    'pick1_valid' => true,
+                    'pick1_reason' => null,
+                    'pick2' => null,
+                    'pick2_points' => 0,
+                    'pick2_playmaker' => false,
+                    'pick2_valid' => true,
+                    'pick2_reason' => null,
+                    'total' => 0,
+                ];
+            }
+
+
+            // update the data
+            $teamPicks[$teamPick->week]['pick'.$teamPick->number] = ($teamPick->nfl_stat->player_id) ? $teamPick->nfl_stat->player->display() : $teamPick->nfl_stat->team->display();
+            $teamPicks[$teamPick->week]['pick'.$teamPick->number.'_points'] = $teamPick->points();
+            $teamPicks[$teamPick->week]['pick'.$teamPick->number.'_playmaker'] = $teamPick->playmaker;
+            $teamPicks[$teamPick->week]['pick'.$teamPick->number.'_valid'] = $teamPick->valid;
+            $teamPicks[$teamPick->week]['pick'.$teamPick->number.'_reason'] = $teamPick->reason;
+
+            $total = $teamPicks[$teamPick->week]['pick1_points'] + $teamPicks[$teamPick->week]['pick2_points'];
+            $teamPicks[$teamPick->week]['total'] = $total;
+
+            $overallTotal += $teamPicks[$teamPick->week]['pick'.$teamPick->number.'_points'];
+        }
+
+        // total up the points
+        $teamPicks[18] = [
+            'week' => 18,
+            'pick1' => null,
+            'pick1_points' => 0,
+            'pick1_playmaker' => false,
+            'pick1_valid' => true,
+            'pick1_reason' => null,
+            'pick2' => null,
+            'pick2_points' => 0,
+            'pick2_playmaker' => false,
+            'pick2_valid' => true,
+            'pick2_reason' => null,
+            'total' => $overallTotal,
+        ];
+
+        return response()->json(array_values($teamPicks), 200);
     }
 }

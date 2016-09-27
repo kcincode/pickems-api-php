@@ -12,6 +12,11 @@ class WeeklyLeader extends Model
      * @var array
      */
     protected $fillable = [
-        'week', 'team_id', 'team', 'points'
+        'week', 'team_id', 'points'
     ];
+
+    public function team()
+    {
+        return $this->belongsTo(Team::class);
+    }
 }

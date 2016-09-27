@@ -77,7 +77,7 @@ class PickemsStats extends Command
                 ->get();
 
             $weekData = [];
-            foreach($teamPicks as $teamPick) {
+            foreach ($teamPicks as $teamPick) {
                 if (isset($weekData[$teamPick->team_id])) {
                     // if set just update points
                     $weekData[$teamPick->team_id]['points'] += $teamPick->points();
@@ -85,14 +85,13 @@ class PickemsStats extends Command
                     $weekData[$teamPick->team_id] = [
                         'week' => $week,
                         'team_id' => $teamPick->team_id,
-                        'team' => $teamPick->team->name,
                         'points' => $teamPick->points(),
                     ];
                 }
             }
 
             // sort by points
-            usort($weekData, function($a, $b) {
+            usort($weekData, function ($a, $b) {
                 return ($a['points'] >= $b['points']) ? -1 : 1;
             });
 
@@ -132,18 +131,18 @@ class PickemsStats extends Command
         $bar->advance();
 
         // set each teams wins and losses
-        foreach($games as $game) {
+        foreach ($games as $game) {
             $teamsWinLoss[$game->winning_team_id]['wins']++;
             $teamsWinLoss[$game->losing_team_id]['losses']++;
         }
         $bar->advance();
 
         // apply win/loss to teams
-        foreach(Team::all() as $team) {
+        foreach (Team::all() as $team) {
             $pickedTeams = [];
 
             // fetch teams used
-            foreach($team->teamPicks as $teamPick) {
+            foreach ($team->teamPicks as $teamPick) {
                 if ($teamPick->nfl_stat->player && $teamPick->week <= $toWeek) {
                     $pickedTeams[] = $teamPick->nfl_stat->player->team_id;
                 }
@@ -151,7 +150,7 @@ class PickemsStats extends Command
 
             // fetch w/l on teams remaining
             $wlData = ['wins' => 0, 'losses' => 0];
-            foreach($teamsWinLoss as $abbr => $data) {
+            foreach ($teamsWinLoss as $abbr => $data) {
                 if (!in_array($abbr, $pickedTeams)) {
                     $wlData['wins'] += $data['wins'];
                     $wlData['losses'] += $data['losses'];
@@ -181,10 +180,10 @@ class PickemsStats extends Command
         $start = microtime(true);
 
         // apply win/loss to teams
-        foreach($teams as $team) {
+        foreach ($teams as $team) {
             $points = 0;
             // fetch teams used
-            foreach($team->teamPicks as $teamPick) {
+            foreach ($team->teamPicks as $teamPick) {
                 // only calculate points for valid picks
                 if ($teamPick->valid && $teamPick->week <= $toWeek) {
                     $points += $teamPick->points();
@@ -219,14 +218,14 @@ class PickemsStats extends Command
         $stats = NflStat::where('week', '<=',  $toWeek)
             ->get();
 
-        $bar = $this->output->createProgressBar((count($stats) * 2) + 2);
+        $bar = $this->output->createProgressBar((count($stats) * 2) + 3);
         $start = microtime(true);
 
         // clear the table
         DB::table('best_picks')->truncate();
 
         $allStats = [];
-        foreach($stats as $stat) {
+        foreach ($stats as $stat) {
             $allStats[] = [
                 'week' => $stat->week,
                 'pick' => ($stat->player_id) ? $stat->player->display() : $stat->team->display(),
@@ -241,7 +240,7 @@ class PickemsStats extends Command
         }
 
         // sort by points
-        usort($allStats, function($a, $b) {
+        usort($allStats, function ($a, $b) {
             return ($a['points'] > $b['points']) ? -1 : 1;
         });
         $bar->advance();
@@ -259,18 +258,18 @@ class PickemsStats extends Command
         ];
 
         // genereate picks
-        foreach($allStats as $stat) {
+        foreach ($allStats as $stat) {
             if (isset($picks[$stat['week']]) && count($picks[$stat['week']]) == 2) {
                 // already have 2 picks
                 continue;
-            } else if (!isset($picks[$stat['week']])) {
+            } elseif (!isset($picks[$stat['week']])) {
                 // initialize week
                 $picks[$stat['week']] = [];
             }
 
             if (!empty($stat['team'])) {
                 // player valid pick
-                if ($picksLeft[$stat['position']] > 0 && !in_array($stat['team'], $picksLeft['teams'])){
+                if ($picksLeft[$stat['position']] > 0 && !in_array($stat['team'], $picksLeft['teams'])) {
                     // playmaker?
                     if ($picksLeft['playmakers'] > 0) {
                         $picksLeft['playmakers']--;
@@ -298,7 +297,8 @@ class PickemsStats extends Command
             $bar->advance();
         }
 
-        foreach($picks as $week => $pick) {
+        $total = 0;
+        foreach ($picks as $week => $pick) {
             BestPick::create([
                 'type' => 'REG',
                 'week' => $week,
@@ -308,8 +308,24 @@ class PickemsStats extends Command
                 'pick2' => $pick[1]['pick'],
                 'pick2_points' => $pick[1]['points'],
                 'pick2_playmaker' => $pick[1]['playmaker'],
+                'total' => $pick[0]['points'] + $pick[1]['points'],
             ]);
+
+            $total += $pick[0]['points'] + $pick[1]['points'];
         }
+        $bar->advance();
+
+        BestPick::create([
+            'type' => 'REG',
+            'week' => 18,
+            'pick1' => '',
+            'pick1_points' => 0,
+            'pick1_playmaker' => false,
+            'pick2' => '',
+            'pick2_points' => 0,
+            'pick2_playmaker' => false,
+            'total' => $total,
+        ]);
         $bar->advance();
 
         $bar->finish();
@@ -338,7 +354,7 @@ class PickemsStats extends Command
         DB::table('most_picked')->truncate();
 
         $picked = [];
-        foreach($teamPicks as $teamPick) {
+        foreach ($teamPicks as $teamPick) {
             if ($teamPick->nfl_stat->player_id) {
                 $type = 'player';
                 $key = $teamPick->nfl_stat->player_id;
@@ -363,11 +379,11 @@ class PickemsStats extends Command
         // genereate text with all picks > 1
         $mostPicked = [];
         foreach ($picked as $week => $data) {
-            usort($data, function($a, $b) {
+            usort($data, function ($a, $b) {
                 return ($a['numpicked'] > $b['numpicked']) ? -1 : 1;
             });
 
-            foreach($data as $item) {
+            foreach ($data as $item) {
                 if ($item['numpicked'] < 2) {
                     break;
                 }

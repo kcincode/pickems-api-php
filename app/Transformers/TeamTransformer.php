@@ -13,6 +13,7 @@ class TeamTransformer extends Fractal\TransformerAbstract
         return [
             'id' => (int) $team->id,
             'name' => $team->name,
+            'slug' => $team->slug,
             'paid' => (bool) $team->paid,
             'points' => (int) $team->points,
             'playoffs' => (int) $team->playoffs,

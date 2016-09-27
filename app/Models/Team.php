@@ -2,6 +2,7 @@
 
 namespace Pickems\Models;
 
+use Auth;
 use Pickems\Models\TeamPick;
 use Illuminate\Database\Eloquent\Model;
 
@@ -13,7 +14,7 @@ class Team extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id', 'name', 'paid', 'points', 'playoffs', 'wl',
+        'user_id', 'name', 'slug', 'paid', 'points', 'playoffs', 'wl',
     ];
 
     protected $casts = [
@@ -37,7 +38,7 @@ class Team extends Model
         // default pick data
         $pick1 = $pick2 = [
             'selected' => null,
-            'disabled' => false,
+            'disabled' => $week < NflGame::currentWeekRegularSeason(),
             'id' => null,
             'type' => null,
             'valid' => true,
@@ -45,19 +46,23 @@ class Team extends Model
             'playmaker' => false,
         ];
 
-        $teamPicks = TeamPick::where('week', '=', $week)
-            ->orderBy('number', 'asc')
-            ->get();
+        if ($this->user_id == Auth::id()) {
+            $teamPicks = TeamPick::where('team_id', '=', $this->id)
+                ->where('week', '=', $week)
+                ->orderBy('number', 'asc')
+                ->get();
 
-        foreach ($teamPicks as $teamPick) {
-            $key = 'pick'. $teamPick->number;
+            foreach ($teamPicks as $teamPick) {
+                $key = 'pick'. $teamPick->number;
 
-            $$key['type'] = ($teamPick->nfl_stat->player_id) ? 'player' : 'team';
-            $$key['id'] = ($teamPick->nfl_stat->player_id) ? (int) $teamPick->nfl_stat->player_id : (int) $teamPick->nfl_stat->team_id;
-            $$key['reason'] = $teamPick->reason;
-            $$key['valid'] = (bool) $teamPick->valid;
-            $$key['playmaker'] = (bool) $teamPick->playmaker;
+                $$key['type'] = ($teamPick->nfl_stat->player_id) ? 'player' : 'team';
+                $$key['id'] = ($teamPick->nfl_stat->player_id) ? (int) $teamPick->nfl_stat->player_id : (int) $teamPick->nfl_stat->team_id;
+                $$key['reason'] = $teamPick->reason;
+                $$key['valid'] = (bool) $teamPick->valid;
+                $$key['playmaker'] = (bool) $teamPick->playmaker;
+            }
         }
+
 
         return [
             $pick1,
@@ -79,7 +84,7 @@ class Team extends Model
             'nfc' => 1,
         ];
 
-        foreach($this->teamPicks as $teamPick) {
+        foreach ($this->teamPicks as $teamPick) {
             if (!$teamPick->nfl_stat) {
                 continue;
             }
@@ -90,30 +95,34 @@ class Team extends Model
                 // check playmaker
                 if ($teamPick->playmaker && $picksLeft['playmakers'] <= 0) {
                     // error in pick
-                    $pick->valid = false;
-                    $pick->reason = 'You have already used your playmakers';
-                } else if ($picksLeft[$pick->position] <= 0) {
+                    $teamPick->valid = false;
+                    $teamPick->reason = 'You have already used your playmakers';
+                } elseif ($picksLeft[$pick->position] <= 0) {
                     // error in pick
-                    $pick->valid = false;
-                    $pick->reason = 'You have already picked all players from the position '.$pick->position;
-                } else if (in_array($pick->team->abbr, $teamsPicked)) {
-                    $pick->valid = false;
-                    $pick->reason = 'You have already picked a player from the team '.$pick->team->abbr;
+                    $teamPick->valid = false;
+                    $teamPick->reason = 'You have already picked all players from the position '.$pick->position;
+                } elseif (in_array($pick->team->abbr, $teamsPicked)) {
+                    $teamPick->valid = false;
+                    $teamPick->reason = 'You have already picked a player from the team '.$pick->team->abbr;
                 } else {
                     // player pick
                     $picksLeft[$pick->position]--;
                     $teamsPicked[] = $pick->team->abbr;
+
+                    if ($teamPick->playmaker) {
+                        $picksLeft['playmakers']--;
+                    }
                 }
             } else {
                 $pick = $teamPick->nfl_stat->team;
 
-                if ($picksLeft[$pick->conference] <= 0) {
+                if ($picksLeft[strtolower($pick->conference)] <= 0) {
                     // error in pick
-                    $pick->valid = false;
-                    $pick->reason = 'You have already picked a team from the conference '.$pick->conference;
+                    $teamPick->valid = false;
+                    $teamPick->reason = 'You have already picked a team from the conference '.$pick->conference;
                 } else {
                     // team pick
-                    $picksLeft[$pick->conference]--;
+                    $picksLeft[strtolower($pick->conference)]--;
                 }
             }
 

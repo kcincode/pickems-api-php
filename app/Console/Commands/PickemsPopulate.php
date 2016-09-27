@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Pickems\Models\User;
 use Pickems\Models\Team;
 use Pickems\Models\NflGame;
+use Pickems\Models\NflTeam;
 use Pickems\Models\NflStat;
 use Pickems\Models\TeamPick;
 use Pickems\Models\NflPlayer;
@@ -68,8 +69,9 @@ class PickemsPopulate extends Command
         $bar->advance();
 
         // create 25 users
-        $users = factory(User::class, 25)->create();
-        foreach($users as $user) {
+        $hash = bcrypt('testing');
+        $users = factory(User::class, 25)->create(['password' => $hash]);
+        foreach ($users as $user) {
             $team = factory(Team::class)->create(['user_id' => $user->id]);
 
             $this->makeRegularSeasonPicks($team->id);
@@ -85,18 +87,18 @@ class PickemsPopulate extends Command
     {
         $pickedAt = Carbon::createFromFormat('Y-m-d H:i:s', NflGame::first()->starts_at)->subHour();
 
-        foreach(range(1, 17) as $week) {
-            $picksLeft = [
-                'QB' => 8,
-                'RB' => 8,
-                'WRTE' => 8,
-                'K' => 8,
-                'playmakers' => 2,
-                'afc' => 1,
-                'nfc' => 1,
-                'picked' => [],
-            ];
+        $picksLeft = [
+            'QB' => 8,
+            'RB' => 8,
+            'WRTE' => 8,
+            'K' => 8,
+            'playmakers' => 2,
+            'afc' => 1,
+            'nfc' => 1,
+            'picked' => [],
+        ];
 
+        foreach (range(1, 17) as $week) {
             $this->makePick($teamId, $week, 1, $pickedAt, $picksLeft);
             $this->makePick($teamId, $week, 2, $pickedAt, $picksLeft);
         }
@@ -107,10 +109,15 @@ class PickemsPopulate extends Command
         $pickType = $this->getPickType($picksLeft);
         $nflStat = $this->makeRandomPick($week, $pickType, $picksLeft);
 
-        $playmaker = ($picksLeft['playmakers'] > 0 && mt_rand(1, 100) > 50) ? true : false;
-        if ($playmaker) {
-            $picksLeft['playmakers']--;
+        $playmaker = false;
+        if ($pickType == 'player' && $picksLeft['playmakers'] > 0) {
+            $playmaker = mt_rand(1, 100) > 50;
+            if ($playmaker) {
+                $picksLeft['playmakers']--;
+            }
         }
+
+        // var_dump($picksLeft);
 
         $teamPick = TeamPick::create([
             'team_id' => $teamId,
@@ -131,9 +138,9 @@ class PickemsPopulate extends Command
 
         if ($positionsLeft && $conferencesLeft) {
             return (mt_rand() * 100 > 50) ? 'player' : 'team';
-        } else if($positionLeft) {
+        } elseif ($positionsLeft) {
             return 'player';
-        } else if($conferencesLeft)  {
+        } elseif ($conferencesLeft) {
             return 'team';
         }
 
@@ -142,9 +149,12 @@ class PickemsPopulate extends Command
 
     private function makeRandomPick($week, $type, &$picksLeft)
     {
+        $positionsUsed = $this->generatePositionsUsed($picksLeft);
+
         if ($type == 'player') {
             $player = NflPlayer::join('nfl_teams', 'nfl_teams.abbr', '=', 'nfl_players.team_id')
                 ->whereNotIn('nfl_teams.abbr', $picksLeft['picked'])
+                ->whereNotIn('position', $positionsUsed)
                 ->inRandomOrder()
                 ->first();
 
@@ -155,10 +165,10 @@ class PickemsPopulate extends Command
         } else {
             $conferences = [];
             if ($picksLeft['afc'] > 0) {
-                $conferences[] = 'afc';
+                $conferences[] = 'AFC';
             }
             if ($picksLeft['nfc'] > 0) {
-                $conferences[] = 'nfc';
+                $conferences[] = 'NFC';
             }
 
             // team pick
@@ -170,5 +180,17 @@ class PickemsPopulate extends Command
 
             return NflStat::updateOrCreate($week, $type, $team->abbr);
         }
+    }
+
+    private function generatePositionsUsed($picksLeft)
+    {
+        $data = [];
+        foreach (['QB', 'RB', 'WRTE', 'K'] as $position) {
+            if ($picksLeft[$position] <= 0) {
+                $data[] = $position;
+            }
+        }
+
+        return $data;
     }
 }

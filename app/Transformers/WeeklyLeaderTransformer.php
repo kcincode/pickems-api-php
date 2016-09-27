@@ -1,20 +1,24 @@
 <?php
 namespace Pickems\Transformers;
 
-use Pickems\Models\WeeklyLeader;
 use League\Fractal;
+use Pickems\Models\WeeklyLeader;
 
 class WeeklyLeaderTransformer extends Fractal\TransformerAbstract
 {
+    protected $defaultIncludes = ['team'];
 
     public function transform(WeeklyLeader $weeklyLeader)
     {
         return [
             'id' => (int) $weeklyLeader->id,
             'week' => (int) $weeklyLeader->week,
-            'team_id' => (int) $weeklyLeader->team_id,
-            'team' => $weeklyLeader->team,
             'points' => (int) $weeklyLeader->points,
         ];
+    }
+
+    public function includeTeam(WeeklyLeader $weeklyLeader)
+    {
+        return $this->item($weeklyLeader->team, new TeamTransformer, 'teams');
     }
 }

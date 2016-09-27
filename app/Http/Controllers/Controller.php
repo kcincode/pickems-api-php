@@ -58,7 +58,7 @@ class Controller extends BaseController
 
     private function castData($data, $type)
     {
-        switch($type) {
+        switch ($type) {
             case 'integer':
                 return (int) $data;
             default:
@@ -74,5 +74,10 @@ class Controller extends BaseController
     private function validateQueryParamArray($data)
     {
         return is_array($data);
+    }
+
+    private function validateQueryParamString($data)
+    {
+        return strlen($data) > 0;
     }
 }

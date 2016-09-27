@@ -56,7 +56,7 @@ class StatsController extends Controller
         return $this->jsonResponse($resource, 200);
     }
 
-    public function ranking()
+    public function rankings()
     {
         $data = [
             'Gold' => [],
@@ -72,7 +72,7 @@ class StatsController extends Controller
 
         $teamsCount = count($paidTeams);
         $half = ceil(count($paidTeams) / 2);
-        foreach($paidTeams as $idx => $team) {
+        foreach ($paidTeams as $idx => $team) {
             if ($idx < $half) {
                 $data['Gold'][] = $team;
             } else {
@@ -82,5 +82,4 @@ class StatsController extends Controller
 
         return response()->json($data, 200);
     }
-
 }

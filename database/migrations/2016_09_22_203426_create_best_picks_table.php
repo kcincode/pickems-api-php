@@ -23,6 +23,7 @@ class CreateBestPicksTable extends Migration
             $table->string('pick2');
             $table->integer('pick2_points')->unsigned();
             $table->boolean('pick2_playmaker')->default(false);
+            $table->integer('total')->unsigned();
             $table->timestamps();
         });
     }

@@ -47,11 +47,22 @@ class NflGame extends Model
     public static function currentWeek()
     {
         $game = self::where('starts_at', '>=', Carbon::now())->orderBy('starts_at', 'asc')->first();
+
         if ($game) {
             return $game->type.'-'.$game->week;
         }
 
         return 'POST-5';
+    }
+
+    public static function currentWeekRegularSeason()
+    {
+        $currentWeek = self::currentWeek();
+        if (substr($currentWeek, 0, strpos($currentWeek, '-')) == 'POST') {
+            return 17;
+        }
+
+        return substr($currentWeek, strpos($currentWeek, '-') + 1);
     }
 
     public static function fetchApiSchedule($week)
@@ -62,7 +73,6 @@ class NflGame extends Model
 
         $schedule = [];
         foreach ($games as $game) {
-
         }
 
         return $schedule;
