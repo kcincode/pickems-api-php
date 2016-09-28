@@ -25,7 +25,7 @@ $factory->define(Pickems\Models\User::class, function (Faker\Generator $faker) {
 
 $factory->define(Pickems\Models\Team::class, function (Faker\Generator $faker) {
     $name = $faker->company;
-    $slug = str_slug($faker->company);
+    $slug = str_slug($name);
 
     return [
         'user_id' => function () {

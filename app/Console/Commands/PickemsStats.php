@@ -53,6 +53,7 @@ class PickemsStats extends Command
             $this->weeklyLeaders($type, $week - 1);
             $this->teamsWinLoss($type, $week - 1);
             $this->teamScores($type, $week - 1);
+            $this->teamPlayoffScores();
             $this->bestPicks($type, $week - 1);
             $this->mostPicked($type, $week - 1);
         }
@@ -193,15 +194,61 @@ class PickemsStats extends Command
             // update the points
             $team->points = $points;
 
-            $playoffPoints = 0;
-            if ($type == 'POST') {
-                // TODO: Playoff picks
-            }
-
-            $team->playoffs = $playoffPoints;
+            $team->playoffs = 0;
             $team->save();
             $bar->advance();
         }
+
+        $bar->finish();
+        $time = number_format(microtime(true) - $start, 2);
+        $this->info('    '.$time. ' seconds');
+    }
+
+    private function teamPlayoffScores()
+    {
+        $this->info("Calculating team playoff scores:");
+        $start = microtime(true);
+
+        $data = [
+            'gold' => [],
+            'silver' => [],
+            'bronze' => Team::where('paid', '=', false)
+                ->orderBy('points', 'desc')
+                ->orderBy('wl', 'desc')
+                ->get(),
+        ];
+
+        $paidTeams = Team::where('paid', '=', true)
+            ->orderBy('points', 'desc')
+            ->orderBy('wl', 'desc')
+            ->get();
+
+        $bar = $this->output->createProgressBar(count($paidTeams) + 3);
+
+        $teamsCount = count($paidTeams);
+        $bar->advance();
+        $half = ceil(count($paidTeams) / 2);
+        $bar->advance();
+
+        foreach ($paidTeams as $idx => $team) {
+            if ($idx < $half) {
+                $data['gold'][] = $team;
+            } else {
+                $data['silver'][] = $team;
+            }
+            $bar->advance();
+        }
+
+        // calculate the team playoff points
+        foreach ($data as $type => $teams) {
+            $pts = (count($teams) - 1) * 6;
+            foreach ($teams as $team) {
+                $team->playoffs = $pts;
+                $team->save();
+                $pts -= 6;
+            }
+        }
+        $bar->advance();
 
         $bar->finish();
         $time = number_format(microtime(true) - $start, 2);

@@ -59,24 +59,26 @@ class StatsController extends Controller
     public function rankings()
     {
         $data = [
-            'Gold' => [],
-            'Silver' => [],
-            'Bronze' => Team::where('paid', '=', false)
+            'gold' => [],
+            'silver' => [],
+            'bronze' => Team::where('paid', '=', false)
                 ->orderBy('points', 'desc')
+                ->orderBy('wl', 'desc')
                 ->get(),
         ];
 
         $paidTeams = Team::where('paid', '=', true)
             ->orderBy('points', 'desc')
+            ->orderBy('wl', 'desc')
             ->get();
 
         $teamsCount = count($paidTeams);
         $half = ceil(count($paidTeams) / 2);
         foreach ($paidTeams as $idx => $team) {
             if ($idx < $half) {
-                $data['Gold'][] = $team;
+                $data['gold'][] = $team;
             } else {
-                $data['Silver'][] = $team;
+                $data['silver'][] = $team;
             }
         }
 
