@@ -63,7 +63,7 @@ class PicksController extends Controller
 
     public function postPicks(Request $request)
     {
-        $params = $this->validateQueryParams($request, ['team' => 'integer', 'week' => 'integer', 'pick1' => 'array', 'pick2' => 'array']);
+        $params = $this->validateQueryParams($request, ['team' => 'string', 'week' => 'integer', 'pick1' => 'array', 'pick2' => 'array']);
 
         // make sure there is a team and week specified
         if (!isset($params['team']) or !isset($params['week'])) {
@@ -81,7 +81,7 @@ class PicksController extends Controller
         }
 
         // make sure its a valid team
-        $team = Team::find($params['team']);
+        $team = Team::where('slug', '=', $params['team'])->first();
         if (!$team) {
             return $this->renderError('You must specify a valid team', 400);
         }

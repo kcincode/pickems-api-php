@@ -10,7 +10,7 @@ class AuthTest extends TestCase
     public function testInvalidTokenRequest()
     {
         // make a request for a token
-        $response = $this->callPost('/api/token', json_encode(['email' => 'testuser@example.com', 'password' => 'testing']));
+        $response = $this->callPost('/api/token', json_encode(['username' => 'testuser@example.com', 'password' => 'testing']));
 
         // check status code
         $this->assertEquals(401, $response->status());
@@ -26,7 +26,7 @@ class AuthTest extends TestCase
         $user = factory(User::class)->create(['password' => bcrypt('testing')]);
 
         // make a request for a token
-        $response = $this->callPost('/api/token', json_encode(['email' => $user->email, 'password' => 'testing']));
+        $response = $this->callPost('/api/token', json_encode(['username' => $user->email, 'password' => 'testing']));
 
         // check status code
         $this->assertEquals(200, $response->status());
