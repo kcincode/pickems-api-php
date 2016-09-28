@@ -17,7 +17,6 @@ class CreateWeeklyLeadersTable extends Migration
             $table->increments('id');
             $table->integer('week')->unsigned();
             $table->integer('team_id')->unsigned()->references('id')->on('teams')->onDelete('cascade');
-            $table->string('team');
             $table->integer('points')->unsigned();
             $table->timestamps();
         });

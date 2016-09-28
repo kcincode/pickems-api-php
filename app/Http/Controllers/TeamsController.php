@@ -2,10 +2,9 @@
 
 namespace Pickems\Http\Controllers;
 
-use Illuminate\Http\Request;
-
 use JWTAuth;
 use Pickems\Models\Team;
+use Illuminate\Http\Request;
 use League\Fractal\Resource\Item;
 use Pickems\Http\Requests\TeamRequest;
 use League\Fractal\Resource\Collection;
@@ -29,9 +28,18 @@ class TeamsController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $teams = Team::orderBy('name')->get();
+        if ($request->has('slug')) {
+            $params = $this->validateQueryParams($request, ['slug' => 'string']);
+            $teams = Team::where('slug', '=', $params['slug'])
+                ->get();
+        } else {
+            $user = JWTAuth::parseToken()->authenticate();
+            $teams = Team::orderBy('name')
+                ->where('user_id', '=', $user->id)
+                ->get();
+        }
 
         // generate resource
         $resource = new Collection($teams, new TeamTransformer, 'teams');

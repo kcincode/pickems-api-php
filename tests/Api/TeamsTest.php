@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\DatabaseMigrations;
 class TeamsTest extends TestCase
 {
     use DatabaseMigrations;
-    protected $attrs = ['name', 'paid', 'points', 'playoffs', 'wl'];
+    protected $attrs = ['name', 'slug', 'paid', 'points', 'playoffs', 'wl'];
     protected $relations = ['user'];
 
     public function testUnauthenticatedGetRequest()
@@ -30,11 +30,16 @@ class TeamsTest extends TestCase
 
     public function testValidGetRequest()
     {
+        $user = factory(User::class)->create();
+
         // create 2 teams
-        factory(Team::class, 2)->create();
+        factory(Team::class, 2)->create(['user_id' => $user->id]);
+
+        // create 5 other teams (should not display)
+        factory(Team::class, 5)->create();
 
         // make a request
-        $response = $this->callGet('/api/teams', [], 'user');
+        $response = $this->callGet('/api/teams', [], $user);
 
         // check status code
         $this->assertEquals(200, $response->getStatusCode(), 'it has the correct status code');
@@ -147,6 +152,7 @@ class TeamsTest extends TestCase
                 'type' => 'teams',
                 'attributes' => [
                     'name' => 'Test Team',
+                    'slug' => 'test-team',
                     'paid' => true,
                 ],
                 'relationships' => [
@@ -225,6 +231,7 @@ class TeamsTest extends TestCase
                 'id' => $team->id,
                 'attributes' => [
                     'name' => 'mod '.$team->name,
+                    'slug' => str_slug('mod'.$team->name),
                     'paid' => true
                 ],
                 'relationships' => [
@@ -264,6 +271,7 @@ class TeamsTest extends TestCase
                 'id' => $team->id,
                 'attributes' => [
                     'name' => 'mod '.$team->name,
+                    'slug' => str_slug('mod'.$team->name),
                     'paid' => false,
                 ],
                 'relationships' => [
@@ -302,6 +310,7 @@ class TeamsTest extends TestCase
                 'type' => 'teams',
                 'attributes' => [
                     'name' => 'mod '.$team->name,
+                    'slug' => str_slug('mod'.$team->name),
                     'paid' => false,
                 ],
                 'relationships' => [
@@ -335,6 +344,7 @@ class TeamsTest extends TestCase
                 'id' => $team->id,
                 'attributes' => [
                     'name' => 'mod '.$team->name,
+                    'slug' => str_slug('mod'.$team->name),
                     'paid' => false,
                 ],
                 'relationships' => [
@@ -427,7 +437,8 @@ class TeamsTest extends TestCase
                 'type' => 'teams',
                 'id' => $team->id,
                 'attributes' => [
-                    'name' => 'Homygod',
+                    'name' => 'Homygosh',
+                    'slug' => str_slug('Homygosh'),
                     'paid' => false,
                 ],
                 'relationships' => [
@@ -453,6 +464,6 @@ class TeamsTest extends TestCase
         // check the db
         $dbTeam = Team::find($team->id);
         $this->assertEquals($team->paid, $dbTeam->paid, 'paid attribute is updated');
-        $this->assertEquals('Homygod', $dbTeam->name, 'team name is updated');
+        $this->assertEquals('Homygosh', $dbTeam->name, 'team name is updated');
     }
 }

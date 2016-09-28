@@ -69,7 +69,7 @@ class StatsTest extends TestCase
     public function testRankingUnauthenticatedGetRequest()
     {
         // make unauthenticated request
-        $response = $this->callGet('/api/stats/ranking');
+        $response = $this->callGet('/api/stats/rankings');
 
         // check status code
         $this->assertEquals(400, $response->getStatusCode(), 'it has the correct status code');
@@ -78,10 +78,9 @@ class StatsTest extends TestCase
     public function testRankingGetRequest()
     {
         // make unauthenticated request
-        $response = $this->callGet('/api/stats/ranking', [], 'user');
+        $response = $this->callGet('/api/stats/rankings', [], 'user');
 
         // check status code
         $this->assertEquals(200, $response->getStatusCode(), 'it has the correct status code');
     }
-
 }

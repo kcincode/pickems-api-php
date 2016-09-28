@@ -54,7 +54,7 @@ class PicksTest extends TestCase
         $team = factory(Team::class)->create();
 
         // make a request
-        $response = $this->callGet('/api/picks?team='.$team->id.'&week=1111', [], 'user');
+        $response = $this->callGet('/api/picks?team='.$team->slug.'&week=1111', [], 'user');
 
         // check status code
         $this->assertEquals(400, $response->getStatusCode(), 'it has the correct status code');
@@ -73,7 +73,7 @@ class PicksTest extends TestCase
         factory(TeamPick::class)->create(['week' => 1, 'number' => 2]);
 
         // make a request
-        $response = $this->callGet('/api/picks?team='.$team->id.'&week=1', [], 'user');
+        $response = $this->callGet('/api/picks?team='.$team->slug.'&week=1', [], 'user');
 
         // check status code
         $this->assertEquals(200, $response->getStatusCode(), 'it has the correct status code');
@@ -94,7 +94,7 @@ class PicksTest extends TestCase
         $this->assertTrue(isset($data->teams_picked) and is_array((array) $data->teams_picked), 'it has a teams_pick that is an array');
 
         // if the array has data validate the data
-        foreach(['afc', 'nfc'] as $conference) {
+        foreach (['afc', 'nfc'] as $conference) {
             foreach ($data->teams_picked->$conference as $item) {
                 $this->assertEquals(['abbr', 'name', 'available'], array_keys((array) $item), 'it has the required parts in the teams picked item');
             }
@@ -143,7 +143,7 @@ class PicksTest extends TestCase
         $team = factory(Team::class)->create();
 
         // make a request
-        $response = $this->callPost('/api/picks', json_encode(['team' => $team->id, 'week' => 111]), 'user');
+        $response = $this->callPost('/api/picks', json_encode(['team' => $team->slug, 'week' => 111]), 'user');
 
         // check status code
         $this->assertEquals(400, $response->getStatusCode(), 'it has the correct status code');
@@ -171,7 +171,7 @@ class PicksTest extends TestCase
         ];
 
         // make a request
-        $response = $this->callPost('/api/picks', json_encode(['team' => $team->id, 'week' => 1, 'pick1' => $pick1Data, 'pick2' => $pick2Data]), 'user');
+        $response = $this->callPost('/api/picks', json_encode(['team' => $team->slug, 'week' => 17, 'pick1' => $pick1Data, 'pick2' => $pick2Data]), 'user');
 
         // check status code
         $this->assertEquals(200, $response->getStatusCode(), 'it has the correct status code');
