@@ -3,7 +3,6 @@
 namespace Pickems\Models;
 
 use Auth;
-use Pickems\Models\TeamPick;
 use Illuminate\Database\Eloquent\Model;
 
 class Team extends Model
@@ -53,16 +52,25 @@ class Team extends Model
                 ->get();
 
             foreach ($teamPicks as $teamPick) {
-                $key = 'pick'. $teamPick->number;
+                $tmp = [
+                  'type' => ($teamPick->nfl_stat->player_id) ? 'player' : 'team',
+                  'id' => ($teamPick->nfl_stat->player_id) ? $teamPick->nfl_stat->player_id : $teamPick->nfl_stat->team_id,
+                  'reason' => $teamPick->reason,
+                  'valid' => (bool) $teamPick->valid,
+                  'text' => ($teamPick->nfl_stat->player_id) ? $teamPick->nfl_stat->player->display() : $teamPick->nfl_stat->team->display(),
+                  'available' => (bool) $teamPick->valid,
+                  'playmaker' => (bool) $teamPick->playmaker,
+                ];
 
-                $$key['type'] = ($teamPick->nfl_stat->player_id) ? 'player' : 'team';
-                $$key['id'] = ($teamPick->nfl_stat->player_id) ? (int) $teamPick->nfl_stat->player_id : (int) $teamPick->nfl_stat->team_id;
-                $$key['reason'] = $teamPick->reason;
-                $$key['valid'] = (bool) $teamPick->valid;
-                $$key['playmaker'] = (bool) $teamPick->playmaker;
+                if ($teamPick->number == 1) {
+                    $pick1 = array_merge($pick1, $tmp);
+                    $pick1['selected'] = $tmp;
+                } else {
+                    $pick2 = array_merge($pick2, $tmp);
+                    $pick2['selected'] = $tmp;
+                }
             }
         }
-
 
         return [
             $pick1,
@@ -106,11 +114,11 @@ class Team extends Model
                     $teamPick->reason = 'You have already picked a player from the team '.$pick->team->abbr;
                 } else {
                     // player pick
-                    $picksLeft[$pick->position]--;
+                    --$picksLeft[$pick->position];
                     $teamsPicked[] = $pick->team->abbr;
 
                     if ($teamPick->playmaker) {
-                        $picksLeft['playmakers']--;
+                        --$picksLeft['playmakers'];
                     }
                 }
             } else {
@@ -122,7 +130,7 @@ class Team extends Model
                     $teamPick->reason = 'You have already picked a team from the conference '.$pick->conference;
                 } else {
                     // team pick
-                    $picksLeft[strtolower($pick->conference)]--;
+                    --$picksLeft[strtolower($pick->conference)];
                 }
             }
 
