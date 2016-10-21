@@ -4,18 +4,17 @@ namespace Pickems\Http\Controllers;
 
 use Carbon\Carbon;
 use Pickems\Models\Team;
-use Pickems\Http\Requests;
 use Pickems\Models\NflGame;
 use Pickems\Models\NflStat;
 use Pickems\Models\TeamPick;
+use Pickems\Models\NflTeam;
+use Pickems\Models\NflPlayer;
 use Illuminate\Http\Request;
 
 class PicksController extends Controller
 {
     /**
      * Instantiate a new new controller instance.
-     *
-     * @return void
      */
     public function __construct()
     {
@@ -91,12 +90,7 @@ class PicksController extends Controller
             return $this->renderError('You may not submit picks for past weeks after they are finished', 400);
         }
 
-        // make sure the pick1 and pick2 are valid picks
-        if (!$this->validatePickData($params['pick1']) || !$this->validatePickData($params['pick2'])) {
-            return $this->renderError('The picks are invalid', 400);
-        }
-
-        // update the picks
+        // handle the picks
         $this->handlePick($params['pick1'], 1, $params['week'], $team);
         $this->handlePick($params['pick2'], 2, $params['week'], $team);
 
@@ -127,19 +121,31 @@ class PicksController extends Controller
             ->where('number', '=', $number)
             ->first();
 
+        // don't make a pick if the values are empty
+        if (empty($pick['type'])) {
+            if ($dbPick) {
+                $dbPick->delete();
+            }
+
+            return;
+        }
+
         if (!$dbPick) {
             // create basic pick
             $dbPick = new TeamPick();
             $dbPick->team_id = $team->id;
             $dbPick->week = $week;
             $dbPick->number = $number;
-            $dbPick->playmaker = $pick['playmaker'];
             $dbPick->valid = true;
             $dbPick->reason = null;
         }
 
         // update the nfl stat/
-        $dbPick->nfl_stat_id = NflStat::updateOrCreate($week, $pick['type'], $pick['id']);
+        $stat = NflStat::updateOrCreate($week, $pick['type'], $pick['id']);
+        $dbPick->nfl_stat_id = $stat->id;
+
+        // update playmaker
+        $dbPick->playmaker = $pick['playmaker'];
 
         // update the picked_at if the pick has changed
         if ($dbPick->isDirty()) {
@@ -184,7 +190,6 @@ class PicksController extends Controller
                 ];
             }
 
-
             // update the data
             $teamPicks[$teamPick->week]['pick'.$teamPick->number] = ($teamPick->nfl_stat->player_id) ? $teamPick->nfl_stat->player->display() : $teamPick->nfl_stat->team->display();
             $teamPicks[$teamPick->week]['pick'.$teamPick->number.'_points'] = $teamPick->points();
@@ -215,5 +220,44 @@ class PicksController extends Controller
         ];
 
         return response()->json(array_values($teamPicks), 200);
+    }
+
+    public function filter(Request $request)
+    {
+        $term = $request->input('term');
+        if (empty($term)) {
+            return response()->json([], 200);
+        }
+
+        $results = [];
+        $players = NflPlayer::where('name', 'ILIKE', '%'.$term.'%')
+            ->where('active', '=', 1)
+            ->get();
+
+        foreach ($players as $player) {
+            $results[] = [
+              'id' => $player->gsis_id,
+              'type' => 'player',
+              'available' => true,
+              'text' => $player->display(),
+            ];
+        }
+
+        $teams = NflTeam::where('abbr', 'ILIKE', '%'.$term.'%')
+            ->orWhere('city', 'ILIKE', '%'.$term.'%')
+            ->orWhere('conference', 'ILIKE', '%'.$term.'%')
+            ->orWhere('name', 'ILIKE', '%'.$term.'%')
+            ->get();
+
+        foreach ($teams as $team) {
+            $results[] = [
+              'id' => $team->abbr,
+              'type' => 'team',
+              'available' => true,
+              'text' => $team->display(),
+            ];
+        }
+
+        return response($results, 200);
     }
 }

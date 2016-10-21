@@ -3,7 +3,6 @@
 use Pickems\Models\Team;
 use Pickems\Models\NflGame;
 use Pickems\Models\NflTeam;
-use Pickems\Models\NflStat;
 use Pickems\Models\TeamPick;
 use Pickems\Models\NflPlayer;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -80,7 +79,7 @@ class PicksTest extends TestCase
 
         $data = json_decode($response->content());
 
-        $this->assertTrue(isset($data->schedule) and is_array($data->schedule), 'it has a schedule that is an array');
+        $this->assertTrue(isset($data->schedule) and is_object($data->schedule), 'it has a schedule that is an array');
         $this->assertTrue(isset($data->week) and is_numeric($data->week), 'it has a week and its numeric');
 
         foreach (['pick1', 'pick2'] as $pickNumber) {
@@ -104,7 +103,7 @@ class PicksTest extends TestCase
     public function testUnauthenticatedPostRequest()
     {
         // make unauthenticated request
-        $response = $this->callPost('/api/picks?team=1&week=1', []);
+        $response = $this->callPost('/api/picks?team=1&week=1', json_encode([]));
 
         // check status code
         $this->assertEquals(400, $response->getStatusCode(), 'it has the correct status code');

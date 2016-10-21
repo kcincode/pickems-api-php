@@ -27,6 +27,9 @@ Route::get('picks', 'PicksController@picks');
 Route::post('picks', 'PicksController@postPicks');
 Route::get('picks/{team}', 'PicksController@allPicks');
 
+Route::get('picks-filter', 'PicksController@filter');
+Route::get('team-picks', 'PicksController@teamPick');
+
 Route::get('stats/weekly', 'StatsController@weekly');
 Route::get('stats/best', 'StatsController@best');
 Route::get('stats/most', 'StatsController@most');

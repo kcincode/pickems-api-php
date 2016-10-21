@@ -22,7 +22,7 @@ class NflStat extends Model
 
     public function team()
     {
-        return $this->belongsTo(NflTeam::class ,'team_id', 'abbr');
+        return $this->belongsTo(NflTeam::class, 'team_id', 'abbr');
     }
 
     public function points()
@@ -50,7 +50,9 @@ class NflStat extends Model
             $stat->xp = 0;
 
             $stat->save();
-        } else if ($type == 'player') {
+
+            return $stat;
+        } elseif ($type == 'player') {
             $player = NflPlayer::where('gsis_id', '=', $id)
                 ->where('active', '=', true)
                 ->first();
@@ -68,7 +70,7 @@ class NflStat extends Model
                 $data['player_id'] = $player->gsis_id;
                 // create a new stat
                 $stat = self::create($data);
-            } else if($data) {
+            } elseif ($data) {
                 // update the stat
                 $stat->td = $data['td'];
                 $stat->fg = $data['fg'];
@@ -78,8 +80,10 @@ class NflStat extends Model
 
             $stat->diff = 0;
             $stat->save();
+
+            return $stat;
         }
 
-        return $stat;
+        return null;
     }
 }
