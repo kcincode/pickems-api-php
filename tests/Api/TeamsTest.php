@@ -136,7 +136,7 @@ class TeamsTest extends TestCase
     public function testUnauthenticatedPostRequest()
     {
         // make unauthenticated request
-        $response = $this->callPost('/api/teams', []);
+        $response = $this->callPost('/api/teams', json_encode([]));
 
         // check status code
         $this->assertEquals(400, $response->getStatusCode(), 'it has the correct status code');
@@ -160,7 +160,7 @@ class TeamsTest extends TestCase
                         'data' => [
                             'type' => 'users',
                             'id' => $user->id,
-                        ]
+                        ],
                     ],
                 ],
             ],
@@ -188,7 +188,7 @@ class TeamsTest extends TestCase
         $team = factory(Team::class)->create();
 
         // make unauthenticated request
-        $response = $this->callPatch('/api/teams/'.$team->id, []);
+        $response = $this->callPatch('/api/teams/'.$team->id, json_encode([]));
 
         // check status code
         $this->assertEquals(400, $response->getStatusCode(), 'it has the correct status code');
@@ -200,7 +200,7 @@ class TeamsTest extends TestCase
         $user = factory(User::class)->create();
 
         // make invalid request
-        $response = $this->callPatch('/api/teams/-1', [], $user);
+        $response = $this->callPatch('/api/teams/-1', json_encode([]), $user);
 
         // check status code
         $this->assertEquals(404, $response->getStatusCode(), 'it has the correct status code');
@@ -232,17 +232,17 @@ class TeamsTest extends TestCase
                 'attributes' => [
                     'name' => 'mod '.$team->name,
                     'slug' => str_slug('mod'.$team->name),
-                    'paid' => true
+                    'paid' => true,
                 ],
                 'relationships' => [
                     'user' => [
                         'data' => [
                             'type' => 'users',
                             'id' => $team->user->id,
-                        ]
-                    ]
-                ]
-            ]
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         // make invalid request
@@ -279,10 +279,10 @@ class TeamsTest extends TestCase
                         'data' => [
                             'type' => 'users',
                             'id' => $team->user->id,
-                        ]
-                    ]
-                ]
-            ]
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         // make invalid request
@@ -318,10 +318,10 @@ class TeamsTest extends TestCase
                         'data' => [
                             'type' => 'users',
                             'id' => $team->user->id,
-                        ]
-                    ]
-                ]
-            ]
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         // make invalid request
@@ -352,10 +352,10 @@ class TeamsTest extends TestCase
                         'data' => [
                             'type' => 'users',
                             'id' => $team->user->id,
-                        ]
-                    ]
-                ]
-            ]
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         // the types and expected messages
@@ -399,10 +399,10 @@ class TeamsTest extends TestCase
                         'data' => [
                             'type' => 'users',
                             'id' => $team->user->id,
-                        ]
-                    ]
-                ]
-            ]
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         // the emails and expected messages
@@ -446,10 +446,10 @@ class TeamsTest extends TestCase
                         'data' => [
                             'type' => 'users',
                             'id' => $team->user->id,
-                        ]
-                    ]
-                ]
-            ]
+                        ],
+                    ],
+                ],
+            ],
         ];
         // make invalid request
         $response = $this->callPatch('/api/teams/'.$team->id, json_encode($patchData), $team->user);

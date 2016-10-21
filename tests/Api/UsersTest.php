@@ -112,7 +112,7 @@ class UsersTest extends TestCase
         $user = factory(User::class)->create();
 
         // make unauthenticated request
-        $response = $this->callPatch('/api/users/'.$user->id, []);
+        $response = $this->callPatch('/api/users/'.$user->id, json_encode([]));
 
         // check status code
         $this->assertEquals(400, $response->getStatusCode(), 'it has the correct status code');
@@ -121,7 +121,7 @@ class UsersTest extends TestCase
     public function testInvalidPatchRequest()
     {
         // make invalid request
-        $response = $this->callPatch('/api/users/-1', [], 'user');
+        $response = $this->callPatch('/api/users/-1', json_encode([]), 'user');
 
         // check status code
         $this->assertEquals(404, $response->getStatusCode(), 'it has the correct status code');
@@ -148,9 +148,9 @@ class UsersTest extends TestCase
                 'id' => $otherUser->id,
                 'attributes' => [
                     'name' => 'mod '.$otherUser->name,
-                    'email' => 'mod'.$otherUser->email
-                ]
-            ]
+                    'email' => 'mod'.$otherUser->email,
+                ],
+            ],
         ];
 
         // make invalid request
@@ -179,8 +179,8 @@ class UsersTest extends TestCase
                 'attributes' => [
                     'name' => 'Modified User',
                     'email' => 'modemail@example.com',
-                ]
-            ]
+                ],
+            ],
         ];
 
         // make invalid request
@@ -208,9 +208,9 @@ class UsersTest extends TestCase
                 'type' => 'users',
                 'attributes' => [
                     'name' => 'mod '.$user->name,
-                    'email' => 'mod'.$user->email
-                ]
-            ]
+                    'email' => 'mod'.$user->email,
+                ],
+            ],
         ];
 
         // make invalid request
@@ -231,9 +231,9 @@ class UsersTest extends TestCase
                 'id' => $user->id,
                 'attributes' => [
                     'name' => 'mod '.$user->name,
-                    'email' => 'mod'.$user->email
-                ]
-            ]
+                    'email' => 'mod'.$user->email,
+                ],
+            ],
         ];
 
         // the types and expected messages
@@ -271,8 +271,8 @@ class UsersTest extends TestCase
                 'id' => $user->id,
                 'attributes' => [
                     'name' => 'mod '.$user->name,
-                ]
-            ]
+                ],
+            ],
         ];
 
         // the emails and expected messages
@@ -310,8 +310,8 @@ class UsersTest extends TestCase
                 'attributes' => [
                     'name' => 'mod '.$otherUser->name,
                     'email' => $otherUser->email,
-                ]
-            ]
+                ],
+            ],
         ];
 
         // make invalid request
@@ -338,9 +338,9 @@ class UsersTest extends TestCase
                 'type' => 'users',
                 'id' => $user->id,
                 'attributes' => [
-                    'email' => 'mod'.$user->email
-                ]
-            ]
+                    'email' => 'mod'.$user->email,
+                ],
+            ],
         ];
 
         // make invalid request
@@ -365,8 +365,8 @@ class UsersTest extends TestCase
                     'name' => 'mod '.$otherUser->name,
                     'email' => $otherUser->email,
                     'password' => 'testing2',
-                ]
-            ]
+                ],
+            ],
         ];
 
         // make invalid request
