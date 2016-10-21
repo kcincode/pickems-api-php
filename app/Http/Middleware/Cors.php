@@ -2,6 +2,7 @@
 
 namespace Pickems\Http\Middleware;
 
+use App;
 use Closure;
 
 class Cors
