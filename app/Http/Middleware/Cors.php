@@ -28,7 +28,7 @@ class Cors
     private function getFrontendUrl()
     {
         switch (App::environment()) {
-        case 'prod':
+        case 'production':
           return 'https://pickems.surge.sh';
         default:
           return 'http://localhost:4200';
