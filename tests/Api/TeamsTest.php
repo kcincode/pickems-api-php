@@ -466,4 +466,23 @@ class TeamsTest extends TestCase
         $this->assertEquals($team->paid, $dbTeam->paid, 'paid attribute is updated');
         $this->assertEquals('Homygosh', $dbTeam->name, 'team name is updated');
     }
+
+    public function testHomeStats()
+    {
+        // make unauthenticated request
+        $response = $this->callGet('/api/teams/home');
+
+        // check status code
+        $this->assertEquals(200, $response->getStatusCode(), 'it has the correct status code');
+
+        $data = json_decode($response->content());
+        $this->assertNotEmpty($data, 'it has returned some data');
+
+        $this->assertTrue(isset($data->owners), 'it has an owners property');
+        $this->assertTrue(isset($data->teams), 'it has an teams property');
+        $this->assertTrue(isset($data->teams->total), 'it has an teams->total property');
+        $this->assertTrue(isset($data->teams->paid), 'it has an teams->paid property');
+        $this->assertTrue(isset($data->teams->unpaid), 'it has an teams->unpaid property');
+        $this->assertTrue(isset($data->money), 'it has an money property');
+    }
 }

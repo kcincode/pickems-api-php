@@ -3,6 +3,7 @@
 namespace Pickems\Http\Controllers;
 
 use JWTAuth;
+use Pickems\Models\User;
 use Pickems\Models\Team;
 use Illuminate\Http\Request;
 use League\Fractal\Resource\Item;
@@ -14,13 +15,12 @@ class TeamsController extends Controller
 {
     /**
      * Instantiate a new new controller instance.
-     *
-     * @return void
      */
     public function __construct()
     {
         // authenticate on all routes
-        $this->middleware('jwt.auth');
+        $this->middleware('jwt.auth')
+          ->except('home');
     }
 
     /**
@@ -42,7 +42,7 @@ class TeamsController extends Controller
         }
 
         // generate resource
-        $resource = new Collection($teams, new TeamTransformer, 'teams');
+        $resource = new Collection($teams, new TeamTransformer(), 'teams');
 
         return $this->jsonResponse($resource, 200);
     }
@@ -50,7 +50,8 @@ class TeamsController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
+     *
      * @return \Illuminate\Http\Response
      */
     public function store(TeamRequest $request)
@@ -75,7 +76,7 @@ class TeamsController extends Controller
         $team->save();
 
         // generate resource
-        $resource = new Item($team, new TeamTransformer, 'teams');
+        $resource = new Item($team, new TeamTransformer(), 'teams');
 
         return $this->jsonResponse($resource, 201);
     }
@@ -83,13 +84,14 @@ class TeamsController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  Team $team
+     * @param Team $team
+     *
      * @return \Illuminate\Http\Response
      */
     public function show(Team $team)
     {
         // generate resource
-        $resource = new Item($team, new TeamTransformer, 'teams');
+        $resource = new Item($team, new TeamTransformer(), 'teams');
 
         return $this->jsonResponse($resource, 200);
     }
@@ -97,8 +99,9 @@ class TeamsController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  Team $team
+     * @param \Illuminate\Http\Request $request
+     * @param Team                     $team
+     *
      * @return \Illuminate\Http\Response
      */
     public function update(TeamRequest $request, Team $team)
@@ -119,7 +122,7 @@ class TeamsController extends Controller
         $team->save();
 
         // generate resource
-        $resource = new Item($team, new TeamTransformer, 'teams');
+        $resource = new Item($team, new TeamTransformer(), 'teams');
 
         return $this->jsonResponse($resource, 200);
     }
@@ -127,7 +130,8 @@ class TeamsController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  Team $team
+     * @param Team $team
+     *
      * @return \Illuminate\Http\Response
      */
     public function destroy(Team $team)
@@ -140,5 +144,20 @@ class TeamsController extends Controller
 
         // return empty response
         return response()->json([], 204);
+    }
+
+    public function home()
+    {
+        $data = [
+            'owners' => User::count() - 1,
+            'teams' => [
+              'total' => Team::count(),
+              'paid' => Team::where('paid', '=', true)->count(),
+              'unpaid' => Team::where('paid', '=', false)->count(),
+            ],
+            'money' => Team::where('paid', '=', true)->count() * 10,
+        ];
+
+        return response()->json($data, 200);
     }
 }
