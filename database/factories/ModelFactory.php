@@ -1,5 +1,6 @@
 <?php
-$abbrs = ['ARI','ATL','BAL','BUF','CAR','CHI','CIN','CLE','DAL','DEN','DET','GB','HOU','IND','JAX','KC','MIA','MIN','NE','NO','NYG','NYJ','OAK','PHI','PIT','SD','SEA','SF','LA','TB','TEN','WAS'];
+
+$abbrs = ['ARI', 'ATL', 'BAL', 'BUF', 'CAR', 'CHI', 'CIN', 'CLE', 'DAL', 'DEN', 'DET', 'GB', 'HOU', 'IND', 'JAX', 'KC', 'MIA', 'MIN', 'NE', 'NO', 'NYG', 'NYJ', 'OAK', 'PHI', 'PIT', 'SD', 'SEA', 'SF', 'LA', 'TB', 'TEN', 'WAS'];
 
 /*
 |--------------------------------------------------------------------------
@@ -71,6 +72,7 @@ $factory->define(Pickems\Models\NflTeam::class, function (Faker\Generator $faker
 
 $factory->define(Pickems\Models\NflPlayer::class, function (Faker\Generator $faker) {
     $profile = $faker->numberBetween($min = 00000, $max = 99999);
+
     return [
         'team_id' => function () {
             return factory(Pickems\Models\NflTeam::class)->create()->abbr;
@@ -82,7 +84,6 @@ $factory->define(Pickems\Models\NflPlayer::class, function (Faker\Generator $fak
         'active' => true,
     ];
 });
-
 
 $factory->define(Pickems\Models\TeamPick::class, function (Faker\Generator $faker) {
     $isValid = $faker->boolean;
@@ -120,5 +121,15 @@ $factory->define(Pickems\Models\NflStat::class, function (Faker\Generator $faker
         'two' => ($type == 'player') ? $faker->numberBetween($min = 0, $max = 1) : 0,
         'xp' => ($type == 'player') ? $faker->numberBetween($min = 0, $max = 3) : 0,
         'diff' => ($type == 'team') ? $faker->numberBetween($min = -25, $max = 25) : 0,
+    ];
+});
+
+$factory->define(Pickems\Models\Storyline::class, function (Faker\Generator $faker) {
+    return [
+        'user_id' => function () {
+            return factory(Pickems\Models\User::class)->create()->id;
+        },
+        'week' => $faker->numberBetween($min = 1, $max = 17),
+        'story' => $faker->paragraphs($nb = 3, $asText = true),
     ];
 });

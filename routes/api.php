@@ -35,3 +35,5 @@ Route::get('stats/weekly', 'StatsController@weekly');
 Route::get('stats/best', 'StatsController@best');
 Route::get('stats/most', 'StatsController@most');
 Route::get('stats/rankings', 'StatsController@rankings');
+
+Route::resource('storylines', 'StorylinesController', ['except' => ['create', 'edit']]);
