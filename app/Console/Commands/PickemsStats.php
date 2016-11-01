@@ -31,8 +31,6 @@ class PickemsStats extends Command
 
     /**
      * Create a new command instance.
-     *
-     * @return void
      */
     public function __construct()
     {
@@ -61,7 +59,7 @@ class PickemsStats extends Command
 
     private function weeklyLeaders($type, $toWeek)
     {
-        $this->info("Calculating weekly leaders:");
+        $this->info('Calculating weekly leaders:');
         if ($type == 'POST') {
             $toWeek = 17;
         }
@@ -105,7 +103,7 @@ class PickemsStats extends Command
         }
         $bar->finish();
         $time = number_format(microtime(true) - $start, 2);
-        $this->info('    '.$time. ' seconds');
+        $this->info('    '.$time.' seconds');
 
         if ($type == 'POST') {
             // TODO: Playoff weekly leaders
@@ -114,7 +112,7 @@ class PickemsStats extends Command
 
     private function teamsWinLoss($type, $toWeek)
     {
-        $this->info("Calculating team win loss ratios:");
+        $this->info('Calculating team win loss ratios:');
         if ($type == 'POST') {
             $toWeek = 17;
         }
@@ -133,8 +131,13 @@ class PickemsStats extends Command
 
         // set each teams wins and losses
         foreach ($games as $game) {
-            $teamsWinLoss[$game->winning_team_id]['wins']++;
-            $teamsWinLoss[$game->losing_team_id]['losses']++;
+            if ($game->winning_team_id) {
+                ++$teamsWinLoss[$game->winning_team_id]['wins'];
+            }
+
+            if ($game->losing_team_id) {
+                ++$teamsWinLoss[$game->losing_team_id]['losses'];
+            }
         }
         $bar->advance();
 
@@ -166,12 +169,12 @@ class PickemsStats extends Command
 
         $bar->finish();
         $time = number_format(microtime(true) - $start, 2);
-        $this->info('    '.$time. ' seconds');
+        $this->info('    '.$time.' seconds');
     }
 
     private function teamScores($type, $toWeek)
     {
-        $this->info("Calculating team scores:");
+        $this->info('Calculating team scores:');
         if ($type == 'POST') {
             $toWeek = 17;
         }
@@ -201,12 +204,12 @@ class PickemsStats extends Command
 
         $bar->finish();
         $time = number_format(microtime(true) - $start, 2);
-        $this->info('    '.$time. ' seconds');
+        $this->info('    '.$time.' seconds');
     }
 
     private function teamPlayoffScores()
     {
-        $this->info("Calculating team playoff scores:");
+        $this->info('Calculating team playoff scores:');
         $start = microtime(true);
 
         $data = [
@@ -252,7 +255,7 @@ class PickemsStats extends Command
 
         $bar->finish();
         $time = number_format(microtime(true) - $start, 2);
-        $this->info('    '.$time. ' seconds');
+        $this->info('    '.$time.' seconds');
     }
 
     private function bestPicks($type, $toWeek)
@@ -319,13 +322,13 @@ class PickemsStats extends Command
                 if ($picksLeft[$stat['position']] > 0 && !in_array($stat['team'], $picksLeft['teams'])) {
                     // playmaker?
                     if ($picksLeft['playmakers'] > 0) {
-                        $picksLeft['playmakers']--;
+                        --$picksLeft['playmakers'];
                         $stat['points'] *= 2;
                         $stat['playmaker'] = true;
                     }
 
                     // update the counts
-                    $picksLeft[$stat['position']]--;
+                    --$picksLeft[$stat['position']];
                     $picksLeft['teams'][] = $stat['team'];
 
                     // set pick
@@ -335,7 +338,7 @@ class PickemsStats extends Command
                 // team pick
                 if ($picksLeft[$stat['conference']] > 0) {
                     // update the counts
-                    $picksLeft[$stat['conference']]--;
+                    --$picksLeft[$stat['conference']];
 
                     // set pick
                     $picks[$stat['week']][] = $stat;
@@ -377,8 +380,7 @@ class PickemsStats extends Command
 
         $bar->finish();
         $time = number_format(microtime(true) - $start, 2);
-        $this->info('    '.$time. ' seconds');
-
+        $this->info('    '.$time.' seconds');
 
         if ($type == 'POST') {
             // TODO: Playoff best picks
@@ -439,7 +441,7 @@ class PickemsStats extends Command
                     'type' => 'REG',
                     'week' => $week,
                     'name' => $item['name'],
-                    'number_picked' => $item['numpicked']
+                    'number_picked' => $item['numpicked'],
                 ]);
             }
             $bar->advance();
@@ -447,7 +449,7 @@ class PickemsStats extends Command
 
         $bar->finish();
         $time = number_format(microtime(true) - $start, 2);
-        $this->info('    '.$time. ' seconds');
+        $this->info('    '.$time.' seconds');
 
         if ($type == 'POST') {
             // TODO: Most picked in playoffs

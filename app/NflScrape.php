@@ -216,7 +216,7 @@ class NflScrape
 
     private function convertPosition($position)
     {
-        switch($position) {
+        switch ($position) {
             case 'RB':
             case 'FB':
                 return 'RB';
@@ -236,7 +236,7 @@ class NflScrape
             $url = sprintf($this->statsUrl, $gameId, $gameId, microtime(true));
             try {
                 $page = json_decode(file_get_contents($url));
-            } catch(\Exception $e) {
+            } catch (\Exception $e) {
                 continue;
             }
 
