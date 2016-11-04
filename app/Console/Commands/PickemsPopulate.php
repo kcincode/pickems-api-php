@@ -9,6 +9,7 @@ use Pickems\Models\NflGame;
 use Pickems\Models\NflTeam;
 use Pickems\Models\NflStat;
 use Pickems\Models\TeamPick;
+use Pickems\Models\Storyline;
 use Pickems\Models\NflPlayer;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -31,8 +32,6 @@ class PickemsPopulate extends Command
 
     /**
      * Create a new command instance.
-     *
-     * @return void
      */
     public function __construct()
     {
@@ -46,8 +45,9 @@ class PickemsPopulate extends Command
      */
     public function handle()
     {
-        $this->info("Populating the database with test data");
-        $bar = $this->output->createProgressBar(31);
+        $numberOfUsers = 50;
+        $this->info('Populating the database with test data');
+        $bar = $this->output->createProgressBar(8 + $numberOfUsers);
         $start = microtime(true);
 
         // clear users except admin
@@ -67,10 +67,12 @@ class PickemsPopulate extends Command
         $bar->advance();
         DB::table('most_picked')->truncate();
         $bar->advance();
+        DB::table('storylines')->truncate();
+        $bar->advance();
 
         // create 25 users
         $hash = bcrypt('testing');
-        $users = factory(User::class, 25)->create(['password' => $hash]);
+        $users = factory(User::class, $numberOfUsers)->create(['password' => $hash]);
         foreach ($users as $user) {
             $team = factory(Team::class)->create(['user_id' => $user->id]);
 
@@ -78,9 +80,12 @@ class PickemsPopulate extends Command
             $bar->advance();
         }
 
+        factory(Storyline::class, 50)->create(['user_id' => 1]);
+        $bar->advance();
+
         $bar->finish();
         $time = number_format(microtime(true) - $start, 2);
-        $this->info('    '.$time. ' seconds');
+        $this->info('    '.$time.' seconds');
     }
 
     private function makeRegularSeasonPicks($teamId)
@@ -113,7 +118,7 @@ class PickemsPopulate extends Command
         if ($pickType == 'player' && $picksLeft['playmakers'] > 0) {
             $playmaker = mt_rand(1, 100) > 50;
             if ($playmaker) {
-                $picksLeft['playmakers']--;
+                --$picksLeft['playmakers'];
             }
         }
 
@@ -134,7 +139,7 @@ class PickemsPopulate extends Command
     private function getPickType($picksLeft)
     {
         $conferencesLeft = $picksLeft['afc'] > 0 || $picksLeft['nfc'] > 0;
-        $positionsLeft =  $picksLeft['QB'] > 0 || $picksLeft['WRTE'] > 0 || $picksLeft['RB'] > 0 || $picksLeft['K'] > 0;
+        $positionsLeft = $picksLeft['QB'] > 0 || $picksLeft['WRTE'] > 0 || $picksLeft['RB'] > 0 || $picksLeft['K'] > 0;
 
         if ($positionsLeft && $conferencesLeft) {
             return (mt_rand() * 100 > 50) ? 'player' : 'team';
@@ -158,7 +163,7 @@ class PickemsPopulate extends Command
                 ->inRandomOrder()
                 ->first();
 
-            $picksLeft[$player->position]--;
+            --$picksLeft[$player->position];
             $picksLeft['picked'][] = $player->team->abbr;
 
             return NflStat::updateOrCreate($week, $type, $player->gsis_id);
@@ -176,7 +181,7 @@ class PickemsPopulate extends Command
                 ->inRandomOrder()
                 ->first();
 
-            $picksLeft[strtolower($team->conference)]--;
+            --$picksLeft[strtolower($team->conference)];
 
             return NflStat::updateOrCreate($week, $type, $team->abbr);
         }

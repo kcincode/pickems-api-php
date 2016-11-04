@@ -127,9 +127,10 @@ $factory->define(Pickems\Models\NflStat::class, function (Faker\Generator $faker
 $factory->define(Pickems\Models\Storyline::class, function (Faker\Generator $faker) {
     return [
         'user_id' => function () {
-            return factory(Pickems\Models\User::class)->create()->id;
+            return factory(Pickems\Models\User::class)->create(['role' => 'admin'])->id;
         },
         'week' => $faker->numberBetween($min = 1, $max = 17),
+        'title' => title_case($faker->bs),
         'story' => $faker->paragraphs($nb = 3, $asText = true),
     ];
 });

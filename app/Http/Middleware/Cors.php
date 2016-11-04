@@ -21,6 +21,7 @@ class Cors
 
         $response->headers->set('Access-Control-Allow-Origin', $this->getFrontendUrl());
         $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        $response->headers->set('Access-Control-Allow-Methods', 'GET, OPTIONS, POST, PATCH, DELETE');
 
         return $response;
     }
