@@ -15,6 +15,7 @@ class CreateStorylinesTable extends Migration
             $table->increments('id');
             $table->integer('user_id')->unsigned();
             $table->integer('week')->unsigned();
+            $table->string('title');
             $table->text('story');
             $table->timestamps();
         });

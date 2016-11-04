@@ -14,6 +14,7 @@ class StorylineTransformer extends Fractal\TransformerAbstract
         return [
             'id' => (int) $storyline->id,
             'week' => (int) $storyline->week,
+            'title' => $storyline->title,
             'story' => $storyline->story,
         ];
     }

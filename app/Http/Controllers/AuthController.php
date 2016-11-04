@@ -28,12 +28,14 @@ class AuthController extends Controller
         }
 
         // get the user id
-        $user_id = User::where('email', '=', $credentials['email'])
-            ->first()->id;
+        $user = User::where('email', '=', $credentials['email'])
+            ->first();
+        $user_id = $user->id;
+        $role = $user->role;
 
         $current_week = NflGame::currentWeekRegularSeason();
 
         // all good so return the token
-        return response()->json(compact('access_token', 'user_id', 'current_week'));
+        return response()->json(compact('access_token', 'user_id', 'current_week', 'role'));
     }
 }

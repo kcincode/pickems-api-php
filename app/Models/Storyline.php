@@ -12,7 +12,7 @@ class Storyline extends Model
    * @var array
    */
   protected $fillable = [
-      'user_id', 'week', 'story',
+      'user_id', 'week', 'title', 'story',
   ];
 
     protected $dates = [
