@@ -135,6 +135,7 @@ class StorylineTest extends TestCase
                 'type' => 'storylines',
                 'attributes' => [
                     'week' => 3,
+                    'title' => 'Test Title',
                     'story' => 'Test Story',
                 ],
                 'relationships' => [
