@@ -17,7 +17,7 @@ class AdminTeamsController extends Controller
     public function __construct()
     {
         // authenticate on all routes
-        $this->middleware('jwt.auth');
+        $this->middleware(['jwt.auth', 'is-admin']);
     }
 
     /**
