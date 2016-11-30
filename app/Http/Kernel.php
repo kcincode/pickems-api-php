@@ -34,6 +34,7 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
+            \Pickems\Http\Middleware\Cors::class,
             // 'throttle:180,1',
             'bindings',
         ],

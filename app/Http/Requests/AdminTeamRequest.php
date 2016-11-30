@@ -25,7 +25,7 @@ class AdminTeamRequest extends JsonApiRequest
     public function rules()
     {
         return [
-            'data.type' => 'required|in:teams',
+            'data.type' => 'required|in:admin-teams',
             'data.id' => 'required|integer',
             'data.attributes.name' => 'required|unique:teams,name,'.$this->route('team')->id,
             'data.attributes.slug' => 'required|unique:teams,slug,'.$this->route('team')->id,
@@ -43,7 +43,7 @@ class AdminTeamRequest extends JsonApiRequest
             'data.attributes.slug.unique' => 'The name has already been used',
             'data.attributes.paid.required' => 'You must enter a password',
             'data.type.required' => 'The resource type is required',
-            'data.type.in' => 'The resource type must be `teams`',
+            'data.type.in' => 'The resource type must be `admin-teams`',
             'data.id.required' => 'The id is required',
             'data.id.integer' => 'The id must be a number',
             'data.relationships.user.data.type.required' => 'The user resource type is required',

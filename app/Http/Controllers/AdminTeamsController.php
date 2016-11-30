@@ -4,6 +4,7 @@ namespace Pickems\Http\Controllers;
 
 use Pickems\Models\Team;
 use Illuminate\Http\Request;
+use League\Fractal\Resource\Item;
 use League\Fractal\Resource\Collection;
 use Pickems\Transformers\TeamTransformer;
 use Pickems\Http\Requests\AdminTeamRequest;
@@ -54,12 +55,8 @@ class AdminTeamsController extends Controller
         // update the team
         $team->update($data['attributes']);
 
-        // update the user relation
-        $team->user_id = $data['relationships']['user']['data']['id'];
-        $team->save();
-
         // generate resource
-        $resource = new Item($team, new TeamTransformer(), 'teams');
+        $resource = new Item($team, new TeamTransformer(), 'admin-teams');
 
         return $this->jsonResponse($resource, 200);
     }
