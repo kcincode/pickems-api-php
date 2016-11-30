@@ -34,7 +34,8 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
-            'throttle:120,1',
+            \Pickems\Http\Middleware\Cors::class,
+            // 'throttle:180,1',
             'bindings',
         ],
     ];
@@ -55,5 +56,6 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'jwt.auth' => \Tymon\JWTAuth\Middleware\GetUserFromToken::class,
         'jwt.refresh' => \Tymon\JWTAuth\Middleware\RefreshToken::class,
+        'is-admin' => \Pickems\Http\Middleware\IsAdmin::class,
     ];
 }

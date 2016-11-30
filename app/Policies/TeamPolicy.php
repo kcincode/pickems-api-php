@@ -12,12 +12,9 @@ class TeamPolicy
 
     /**
      * Create a new policy instance.
-     *
-     * @return void
      */
     public function __construct()
     {
-        //
     }
 
     public function patch(User $user, Team $team)
@@ -33,5 +30,10 @@ class TeamPolicy
     public function delete(User $user, Team $team)
     {
         return $user->role == 'admin' || $user->id === $team->user->id;
+    }
+
+    public function admin(User $user, Team $team)
+    {
+        return $user->role == 'admin';
     }
 }

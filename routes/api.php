@@ -37,3 +37,6 @@ Route::get('stats/most', 'StatsController@most');
 Route::get('stats/rankings', 'StatsController@rankings');
 
 Route::resource('storylines', 'StorylinesController', ['except' => ['create', 'edit']]);
+
+Route::get('admin-teams', 'AdminTeamsController@index');
+Route::patch('admin-teams/{team}', 'AdminTeamsController@update');
