@@ -13,6 +13,7 @@ class NflScrape
 
     protected $teamsUrl = 'http://feeds.nfl.com/feeds-rs/teams/%s.json';
     protected $gamesUrl = 'http://www.nfl.com/ajax/scorestrip?season=%s&seasonType=%s&week=%s';
+    protected $postSeasonUrl = 'http://www.nfl.com/liveupdate/scorestrip/postseason/ss.xml';
     protected $rosterUrl = 'http://www.nfl.com/teams/roster?team=%s';
     protected $profileUrl = 'http://www.nfl.com/players/profile?id=%s';
     protected $statsUrl = 'http://www.nfl.com/liveupdate/game-center/%s/%s_gtd.json?random=%s';
@@ -56,70 +57,136 @@ class NflScrape
 
     public function fetchGames()
     {
-        $data = [
-            'REG' => range(1, 17),
-            'POST' => range(1, 4),
-        ];
-
         $results = [];
 
-        foreach ($data as $type => $weeks) {
-            foreach ($weeks as $week) {
-                // define the cache location
-                $gameCache = storage_path().'/data/games/'.$this->year.'-'.$type.'-'.str_pad($week, 2, '0', STR_PAD_LEFT).'.json.gz';
+        foreach (range(1, 17) as $week) {
+            // define the cache location
+            $gameCache = storage_path().'/data/games/'.$this->year.'-'.'REG'.'-'.str_pad($week, 2, '0', STR_PAD_LEFT).'.json.gz';
 
-                if (file_exists($gameCache)) {
-                    // load from cache
-                    $data = json_decode(gzuncompress(file_get_contents($gameCache)));
-                } else {
-                    // build the url
-                    $url = sprintf($this->gamesUrl, $this->year, $type, $week);
+            if (file_exists($gameCache)) {
+                // load from cache
+                $data = json_decode(gzuncompress(file_get_contents($gameCache)));
+            } else {
+                // build the url
+                $url = sprintf($this->gamesUrl, $this->year, 'REG', $week);
 
-                    // load the file and convert
-                    $xmlString = file_get_contents($url);
-                    $xmlString = str_replace(["\n", "\r", "\t"], '', $xmlString);
-                    $xmlString = trim(str_replace('"', "'", $xmlString));
+                // load the file and convert
+                $xmlString = file_get_contents($url);
+                $xmlString = str_replace(["\n", "\r", "\t"], '', $xmlString);
+                $xmlString = trim(str_replace('"', "'", $xmlString));
 
-                    // load json data
-                    $data = json_decode(json_encode(simplexml_load_string($xmlString)));
+                // load json data
+                $data = json_decode(json_encode(simplexml_load_string($xmlString)));
+            }
+
+            // make sure we have data for that week
+            if (empty($data->gms->g)) {
+                continue;
+            }
+
+            // add each game to the results
+            foreach ($data->gms->g as $game) {
+                // convert date time
+                $string = sprintf(
+                    '%s %s PM',
+                    substr($game->{'@attributes'}->eid, 0, -2),
+                    $game->{'@attributes'}->t,
+                    $game->{'@attributes'}->q
+                );
+                $datetime = DateTime::createFromFormat('Ymd g:i A', $string);
+
+                // check for winning losing team
+                $homeScore = $game->{'@attributes'}->hs;
+                $awayScore = $game->{'@attributes'}->vs;
+                $winningTeam = null;
+                $losingTeam = null;
+
+                // reset JAC to JAX
+                $homeTeam = ($game->{'@attributes'}->h == 'JAC') ? 'JAX' : $game->{'@attributes'}->h;
+                $awayTeam = ($game->{'@attributes'}->v == 'JAC') ? 'JAX' : $game->{'@attributes'}->v;
+
+                // if there is a score and its not tied
+                if (is_numeric($homeScore) && is_numeric($awayScore) && $homeScore != $awayScore) {
+                    $winningTeam = ($homeScore > $awayScore) ? $homeTeam : $awayTeam;
+                    $losingTeam = ($homeScore > $awayScore) ? $awayTeam : $homeTeam;
                 }
 
-                // make sure we have data for that week
-                if (empty($data->gms->g)) {
+                $results[] = [
+                    'starts_at' => $datetime,
+                    'week' => $week,
+                    'type' => 'REG',
+                    'eid' => $game->{'@attributes'}->eid,
+                    'gsis' => $game->{'@attributes'}->gsis,
+                    'home_team_id' => $homeTeam,
+                    'away_team_id' => $awayTeam,
+                    'winning_team_id' => $winningTeam,
+                    'losing_team_id' => $losingTeam,
+                ];
+            }
+
+            $now = new DateTime();
+            if ($now > $datetime) {
+                // cache the file
+                file_put_contents($gameCache, gzcompress(json_encode($data), 9));
+            }
+        }
+
+        // load the post season data
+        $xmlString = file_get_contents($this->postSeasonUrl);
+        $xmlString = str_replace(["\n", "\r", "\t"], '', $xmlString);
+        $xmlString = trim(str_replace('"', "'", $xmlString));
+
+        // load json data
+        $data = json_decode(json_encode(simplexml_load_string($xmlString)));
+
+        $weekLookup = [
+            'WC' => 18,
+            'DIV' => 19,
+            'CON' => 20,
+            'SB' => 22,
+        ];
+
+        if (!empty($data->gms->g)) {
+            foreach ($data->gms->g as $game) {
+                // convert date time
+                $string = sprintf(
+                    '%s %s PM',
+                    substr($game->{'@attributes'}->eid, 0, -2),
+                    $game->{'@attributes'}->t,
+                    $game->{'@attributes'}->q
+                );
+                $datetime = DateTime::createFromFormat('Ymd g:i A', $string);
+
+                // check for winning losing team
+                $homeScore = $game->{'@attributes'}->hs;
+                $awayScore = $game->{'@attributes'}->vs;
+                $winningTeam = null;
+                $losingTeam = null;
+
+                // reset JAC to JAX
+                $homeTeam = ($game->{'@attributes'}->h == 'JAC') ? 'JAX' : $game->{'@attributes'}->h;
+                $awayTeam = ($game->{'@attributes'}->v == 'JAC') ? 'JAX' : $game->{'@attributes'}->v;
+
+                // if home or away is TBD set them both to the same
+                if ($homeTeam === 'TBD' && $awayTeam === 'TBD') {
                     continue;
+                } else if ($homeTeam === 'TBD') {
+                    $homeTeam = $awayTeam;
+                } else if ($awayTeam === 'TBD') {
+                    $awayTeam = $homeTeam;
                 }
 
-                // add each game to the results
-                foreach ($data->gms->g as $game) {
-                    // convert date time
-                    $string = sprintf(
-                        '%s %s PM',
-                        substr($game->{'@attributes'}->eid, 0, -2),
-                        $game->{'@attributes'}->t,
-                        $game->{'@attributes'}->q
-                    );
-                    $datetime = DateTime::createFromFormat('Ymd g:i A', $string);
+                // if there is a score and its not tied
+                if (is_numeric($homeScore) && is_numeric($awayScore) && $homeScore != $awayScore) {
+                    $winningTeam = ($homeScore > $awayScore) ? $homeTeam : $awayTeam;
+                    $losingTeam = ($homeScore > $awayScore) ? $awayTeam : $homeTeam;
+                }
 
-                    // check for winning losing team
-                    $homeScore = $game->{'@attributes'}->hs;
-                    $awayScore = $game->{'@attributes'}->vs;
-                    $winningTeam = null;
-                    $losingTeam = null;
-
-                    // reset JAC to JAX
-                    $homeTeam = ($game->{'@attributes'}->h == 'JAC') ? 'JAX' : $game->{'@attributes'}->h;
-                    $awayTeam = ($game->{'@attributes'}->v == 'JAC') ? 'JAX' : $game->{'@attributes'}->v;
-
-                    // if there is a score and its not tied
-                    if (is_numeric($homeScore) && is_numeric($awayScore) && $homeScore != $awayScore) {
-                        $winningTeam = ($homeScore > $awayScore) ? $homeTeam : $awayTeam;
-                        $losingTeam = ($homeScore > $awayScore) ? $awayTeam : $homeTeam;
-                    }
-
+                if (in_array($game->{'@attributes'}->gt, array_keys($weekLookup))) {
                     $results[] = [
                         'starts_at' => $datetime,
-                        'week' => $week,
-                        'type' => $type,
+                        'week' => $weekLookup[$game->{'@attributes'}->gt],
+                        'type' => 'POST',
                         'eid' => $game->{'@attributes'}->eid,
                         'gsis' => $game->{'@attributes'}->gsis,
                         'home_team_id' => $homeTeam,
@@ -127,12 +194,6 @@ class NflScrape
                         'winning_team_id' => $winningTeam,
                         'losing_team_id' => $losingTeam,
                     ];
-                }
-
-                $now = new DateTime();
-                if ($now > $datetime) {
-                    // cache the file
-                    file_put_contents($gameCache, gzcompress(json_encode($data), 9));
                 }
             }
         }

@@ -50,6 +50,20 @@ class PickemsFetch extends Command
 
         $this->nflScrape = new NflScrape($this->argument('year'));
 
+        // update games
+        $start = microtime(true);
+        $this->info("Updating NFL games:");
+        $items = $this->nflScrape->fetchGames();
+        $bar = $this->output->createProgressBar(count($items));
+        foreach ($items as $item) {
+            NflGame::updateOrCreate($item);
+            $bar->advance();
+        }
+        $bar->finish();
+
+        $time = number_format(microtime(true) - $start, 2);
+        $this->info('    '.$time. ' seconds');
+
         // fetch stats for regular season
         $toWeek = ($type == 'REG') ? $week - 1 : 17;
         $start = microtime(true);
@@ -62,8 +76,6 @@ class PickemsFetch extends Command
         $bar->finish();
         $time = number_format(microtime(true) - $start, 2);
         $this->info('    '.$time. ' seconds');
-
-
 
         // fetch stats for post season
         if ($type == 'POST') {
@@ -78,8 +90,10 @@ class PickemsFetch extends Command
             $bar->finish();
             $time = number_format(microtime(true) - $start, 2);
             $this->info('    '.$time. ' seconds');
-
         }
+
+        // recalculate stats after everything is up to date
+        $this->call('pickems:stats');
     }
 
     private function fetchWeekStats($week)
@@ -91,7 +105,7 @@ class PickemsFetch extends Command
             if (array_key_exists('winning_team_id', $stat)) {
                 // find the game
                 $game = NflGame::where('eid', '=', $stat['eid'])->first();
-                
+
                 // update team winner and loser
                 $game->winning_team_id = $stat['winning_team_id'];
                 $game->losing_team_id = $stat['losing_team_id'];

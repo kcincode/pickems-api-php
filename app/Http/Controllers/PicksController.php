@@ -260,4 +260,33 @@ class PicksController extends Controller
 
         return response($results, 200);
     }
+
+    public function playoffFilter(Request $request)
+    {
+        $term = $request->input('term');
+        if (empty($term)) {
+            return $this->renderError('You must specify at least a term to search on', 400);
+        }
+
+        $position = $request->input('position');
+        if (empty($position)) {
+            return $this->renderError('You must specify a position to search on', 400);
+        }
+
+        $results = [];
+        $players = NflPlayer::where('name', 'ILIKE', '%'.$term.'%')
+            ->where('position', '=', $position)
+            ->where('active', '=', true)
+            ->get();
+
+        foreach ($players as $player) {
+            $results[] = [
+              'id' => $player->gsis_id,
+              'available' => true,
+              'text' => $player->display(),
+            ];
+        }
+
+        return response($results, 200);
+    }
 }

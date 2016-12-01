@@ -32,6 +32,11 @@ class Team extends Model
             ->orderBy('number', 'asc');
     }
 
+    public function playoffPicks()
+    {
+        return $this->hasOne(TeamPlayoffPick::class);
+    }
+
     public function calculatePickData($week)
     {
         // default pick data

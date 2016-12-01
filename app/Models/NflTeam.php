@@ -39,4 +39,22 @@ class NflTeam extends Model
 
         return $team;
     }
+
+    public static function playoffTeams()
+    {
+        $teams = [];
+
+        $allPlayoffTeams = NflGame::where('week', '>', 17)->get();
+        foreach($allPlayoffTeams as $pTeam) {
+            if (!in_array($pTeam->home_team_id, $teams)) {
+                $teams[] = $pTeam->home_team_id;
+            }
+
+            if (!in_array($pTeam->away_team_id, $teams)) {
+                $teams[] = $pTeam->away_team_id;
+            }
+        }
+
+        return $teams;
+    }
 }
