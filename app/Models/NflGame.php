@@ -61,6 +61,21 @@ class NflGame extends Model
         return $game;
     }
 
+    public static function updateOrCreate($data)
+    {
+        // try to find the game
+        $game = self::where('eid', '=', $data['eid'])->first();
+
+        if (!$game) {
+            // create the game if it doesn't exits
+            $game = self::create($data);
+        } else {
+            $game->update($data);
+        }
+
+        return $game;
+    }
+
     public static function currentWeek()
     {
         $game = self::where('starts_at', '>=', Carbon::now())->orderBy('starts_at', 'asc')->first();
@@ -70,6 +85,27 @@ class NflGame extends Model
         }
 
         return 'POST-5';
+    }
+
+    public static function hasPlayoffsStarted()
+    {
+        $game = self::where('week', '=', 18)->orderBy('starts_at', 'asc')->first();
+
+        if ($game) {
+            return $game->starts_at < Carbon::now();
+        }
+
+        return false;
+    }
+
+    public static function currentWeekNumber()
+    {
+        $currentWeek = self::currentWeek();
+        if (substr($currentWeek, 0, strpos($currentWeek, '-')) == 'POST') {
+            return 17 + substr($currentWeek, strpos($currentWeek, '-') + 1);
+        }
+
+        return substr($currentWeek, strpos($currentWeek, '-') + 1);
     }
 
     public static function currentWeekRegularSeason()

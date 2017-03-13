@@ -42,7 +42,7 @@ $factory->define(Pickems\Models\Team::class, function (Faker\Generator $faker) {
 });
 
 $factory->define(Pickems\Models\NflGame::class, function (Faker\Generator $faker) {
-    $eid = $faker->numberBetween($min = 2016000000, $max = 2016123100);
+    $eid = $faker->unique()->numberBetween($min = 2016000000, $max = 2016123100);
 
     return [
         'starts_at' => $faker->dateTime,
@@ -132,5 +132,63 @@ $factory->define(Pickems\Models\Storyline::class, function (Faker\Generator $fak
         'week' => $faker->numberBetween($min = 1, $max = 17),
         'title' => title_case($faker->bs),
         'story' => $faker->paragraphs($nb = 3, $asText = true),
+    ];
+});
+
+$factory->define(Pickems\Models\TeamPlayoffPick::class, function (Faker\Generator $faker) {
+    return [
+        'team_id' => function () {
+            return factory(Pickems\Models\Team::class)->create()->id;
+        },
+        'qb1' => function () use ($week) {
+            $player = factory(Pickems\Models\NflPlayer::class)->create(['position' => 'QB']);
+            return factory(Pickems\Models\NflStat::class)->create(['player_id' => $player->id])->id;
+        },
+        'qb2' => function () use ($week) {
+            $player = factory(Pickems\Models\NflPlayer::class)->create(['position' => 'QB']);
+            return factory(Pickems\Models\NflStat::class)->create(['player_id' => $player->id])->id;
+        },
+        'rb1' => function () use ($week) {
+            $player = factory(Pickems\Models\NflPlayer::class)->create(['position' => 'RB']);
+            return factory(Pickems\Models\NflStat::class)->create(['player_id' => $player->id])->id;
+        },
+        'rb2' => function () use ($week) {
+            $player = factory(Pickems\Models\NflPlayer::class)->create(['position' => 'RB']);
+            return factory(Pickems\Models\NflStat::class)->create(['player_id' => $player->id])->id;
+        },
+        'rb3' => function () use ($week) {
+            $player = factory(Pickems\Models\NflPlayer::class)->create(['position' => 'RB']);
+            return factory(Pickems\Models\NflStat::class)->create(['player_id' => $player->id])->id;
+        },
+        'wrte1' => function () use ($week) {
+            $player = factory(Pickems\Models\NflPlayer::class)->create(['position' => 'WRTE']);
+            return factory(Pickems\Models\NflStat::class)->create(['player_id' => $player->id])->id;
+        },
+        'wrte2' => function () use ($week) {
+            $player = factory(Pickems\Models\NflPlayer::class)->create(['position' => 'WRTE']);
+            return factory(Pickems\Models\NflStat::class)->create(['player_id' => $player->id])->id;
+        },
+        'wrte3' => function () use ($week) {
+            $player = factory(Pickems\Models\NflPlayer::class)->create(['position' => 'WRTE']);
+            return factory(Pickems\Models\NflStat::class)->create(['player_id' => $player->id])->id;
+        },
+        'wrte4' => function () use ($week) {
+            $player = factory(Pickems\Models\NflPlayer::class)->create(['position' => 'WRTE']);
+            return factory(Pickems\Models\NflStat::class)->create(['player_id' => $player->id])->id;
+        },
+        'wrte5' => function () use ($week) {
+            $player = factory(Pickems\Models\NflPlayer::class)->create(['position' => 'WRTE']);
+            return factory(Pickems\Models\NflStat::class)->create(['player_id' => $player->id])->id;
+        },
+        'k1' => function () use ($week) {
+            $player = factory(Pickems\Models\NflPlayer::class)->create(['position' => 'K']);
+            return factory(Pickems\Models\NflStat::class)->create(['player_id' => $player->id])->id;
+        },
+        'k2' => function () use ($week) {
+            $player = factory(Pickems\Models\NflPlayer::class)->create(['position' => 'K']);
+            return factory(Pickems\Models\NflStat::class)->create(['player_id' => $player->id])->id;
+        },
+        'valid' => true,
+        'reason' => null
     ];
 });

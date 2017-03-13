@@ -12,6 +12,7 @@ use Pickems\Models\MostPicked;
 use Illuminate\Console\Command;
 use Pickems\Models\WeeklyLeader;
 use Illuminate\Support\Facades\DB;
+use Pickems\Models\TeamPlayoffPick;
 
 class PickemsStats extends Command
 {
@@ -47,7 +48,7 @@ class PickemsStats extends Command
         // get ther current week
         list($type, $week) = explode('-', NflGame::currentWeek());
 
-        if ($type == 'REG' && $week >= 2) {
+        if ($type == 'REG' && $week >= 2 || $type == 'POST') {
             $this->weeklyLeaders($type, $week - 1);
             $this->teamsWinLoss($type, $week - 1);
             $this->teamScores($type, $week - 1);
@@ -162,7 +163,12 @@ class PickemsStats extends Command
             }
 
             // set the w/l ratio
-            $team->wl = number_format($wlData['wins'] / $wlData['losses'], 3);
+            if (in_array(0, array_values($wlData))) {
+                $team->wl = '0.000';
+            } else {
+                $team->wl = number_format($wlData['wins'] / $wlData['losses'], 3);
+            }
+
             $team->save();
             $bar->advance();
         }
@@ -246,12 +252,19 @@ class PickemsStats extends Command
         foreach ($data as $type => $teams) {
             $pts = (count($teams) - 1) * 6;
             foreach ($teams as $team) {
+                // update the playoff picks starting points
                 $team->playoffs = $pts;
                 $team->save();
+
+                // ensure that a playoff picks record is created
+                TeamPlayoffPick::fetchOrCreate($team->id);
+
+                // update the points
                 $pts -= 6;
             }
         }
         $bar->advance();
+
 
         $bar->finish();
         $time = number_format(microtime(true) - $start, 2);
@@ -277,6 +290,7 @@ class PickemsStats extends Command
         $allStats = [];
         foreach ($stats as $stat) {
             $allStats[] = [
+                'type' => 'REG',
                 'week' => $stat->week,
                 'pick' => ($stat->player_id) ? $stat->player->display() : $stat->team->display(),
                 'position' => ($stat->player_id) ? $stat->player->position : null,
@@ -350,7 +364,7 @@ class PickemsStats extends Command
         $total = 0;
         foreach ($picks as $week => $pick) {
             BestPick::create([
-                'type' => 'REG',
+                'type' => $pick[0]['type'],
                 'week' => $week,
                 'pick1' => $pick[0]['pick'],
                 'pick1_points' => $pick[0]['points'],
@@ -381,10 +395,11 @@ class PickemsStats extends Command
         $bar->finish();
         $time = number_format(microtime(true) - $start, 2);
         $this->info('    '.$time.' seconds');
+    }
 
-        if ($type == 'POST') {
-            // TODO: Playoff best picks
-        }
+    private function bestPlayoffPicks()
+    {
+
     }
 
     private function mostPicked($type, $toWeek)

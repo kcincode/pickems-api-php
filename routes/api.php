@@ -30,6 +30,7 @@ Route::get('picks/{team}', 'PicksController@allPicks');
 
 Route::get('picks-filter', 'PicksController@filter');
 Route::get('team-picks', 'PicksController@teamPick');
+Route::get('playoff-picks-filter', 'PicksController@playoffFilter');
 
 Route::get('stats/weekly', 'StatsController@weekly');
 Route::get('stats/best', 'StatsController@best');
@@ -40,3 +41,8 @@ Route::resource('storylines', 'StorylinesController', ['except' => ['create', 'e
 
 Route::get('admin-teams', 'AdminTeamsController@index');
 Route::patch('admin-teams/{team}', 'AdminTeamsController@update');
+
+Route::get('playoff-picks/{team}', 'PlayoffPicksController@picks');
+Route::patch('playoff-picks/{team}', 'PlayoffPicksController@updatePicks');
+Route::get('valid-playoff-picks', 'PlayoffPicksController@validPicks');
+
