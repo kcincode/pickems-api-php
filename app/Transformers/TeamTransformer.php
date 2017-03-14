@@ -17,6 +17,7 @@ class TeamTransformer extends Fractal\TransformerAbstract
             'paid' => (bool) $team->paid,
             'points' => (int) $team->points,
             'playoffs' => (int) $team->playoffs,
+            'playoffs_picks' => (int) $team->playoff_picks,
             'wl' => $team->wl,
         ];
     }

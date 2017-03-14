@@ -77,7 +77,7 @@ class TeamPlayoffPick extends Model
         // setup the playmaker ids
         $playmakerIds = explode(',', $this->playmakers);
         // initialize the points with the starting points
-        $points = $this->starting;
+        $points = $this->team->playoffs;
 
         // loop through all of the player ids in the playoffs
         foreach(NflStat::whereIn('player_id', $this->allIds())->where('week', '>', 17)->get() as $nflStat) {
