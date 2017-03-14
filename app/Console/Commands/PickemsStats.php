@@ -49,12 +49,12 @@ class PickemsStats extends Command
         list($type, $week) = explode('-', NflGame::currentWeek());
 
         if ($type == 'REG' && $week >= 2 || $type == 'POST') {
-            // $this->weeklyLeaders($type, $week - 1);
-            // $this->teamsWinLoss($type, $week - 1);
-            // $this->teamScores($type, $week - 1);
-            // $this->teamPlayoffScores();
-            // $this->bestPicks($type, $week - 1);
-            // $this->mostPicked($type, $week - 1);
+            $this->weeklyLeaders($type, $week - 1);
+            $this->teamsWinLoss($type, $week - 1);
+            $this->teamScores($type, $week - 1);
+            $this->teamPlayoffScores();
+            $this->bestPicks($type, $week - 1);
+            $this->mostPicked($type, $week - 1);
             if ($type == 'POST') {
                 $this->playoffScores($week - 1);
             }
