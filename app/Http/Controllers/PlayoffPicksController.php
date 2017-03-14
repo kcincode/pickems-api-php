@@ -112,4 +112,51 @@ class PlayoffPicksController extends Controller
         // return the data
         return response()->json($this->renderPlayoffPicks($playoffPick), 200);
     }
+
+    public function pickDetails($slug)
+    {
+        $team = Team::where('slug', '=', $slug)->first();
+
+        // make sure there is a valid team specified
+        if (!$team) {
+            abort(404);
+        }
+
+        // get the picks
+        $playoffPick = TeamPlayoffPick::fetchOrCreate($team->id);
+
+        // make sure to validate it
+        $playoffPick->validate();
+
+        // return the data
+        return response()->json($this->renderPlayoffDetailPicks($playoffPick), 200);
+    }
+
+    private function renderPlayoffDetailPicks($playoffPick)
+    {
+        $data = [
+            'overall' => $playoffPick->points(),
+            'picks' => [],
+        ];
+        $order = ['qb1', 'qb2', 'rb1', 'rb2', 'rb3', 'wrte1', 'wrte2', 'wrte3', 'wrte4', 'wrte5', 'k1', 'k2'];
+        $playmakers = (strlen($playoffPick->playmakers) > 0) ? explode(',', $playoffPick->playmakers) : [];
+        $points = $playoffPick->pointDetails();
+
+        foreach($order as $key) {
+            $player = $playoffPick->getPlayer($key)->first();
+            if ($player) {
+                $data['picks'][] = [
+                    'playmaker' => in_array($player->gsis_id, $playmakers),
+                    'name' => $player->display(),
+                    'wildcard' => $points[$player->gsis_id][18],
+                    'divisional' => $points[$player->gsis_id][19],
+                    'conference' => $points[$player->gsis_id][20],
+                    'superbowl' => $points[$player->gsis_id][22],
+                    'total' => $points[$player->gsis_id][18] + $points[$player->gsis_id][19] + $points[$player->gsis_id][20] + $points[$player->gsis_id][22],
+                ];
+            }
+        }
+
+        return $data;
+    }
 }
