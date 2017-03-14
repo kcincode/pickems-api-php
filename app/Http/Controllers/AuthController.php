@@ -33,8 +33,8 @@ class AuthController extends Controller
         $user_id = $user->id;
         $role = $user->role;
 
-        $current_week = 18; //NflGame::currentWeekNumber();
-        $hasPlayoffsStarted = false; //NflGame::hasPlayoffsStarted();
+        $current_week = NflGame::currentWeekNumber();
+        $hasPlayoffsStarted = NflGame::hasPlayoffsStarted();
 
         // all good so return the token
         return response()->json(compact('access_token', 'user_id', 'current_week', 'hasPlayoffsStarted', 'role'));

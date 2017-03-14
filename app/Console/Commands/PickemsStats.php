@@ -49,12 +49,15 @@ class PickemsStats extends Command
         list($type, $week) = explode('-', NflGame::currentWeek());
 
         if ($type == 'REG' && $week >= 2 || $type == 'POST') {
-            $this->weeklyLeaders($type, $week - 1);
-            $this->teamsWinLoss($type, $week - 1);
-            $this->teamScores($type, $week - 1);
-            $this->teamPlayoffScores();
-            $this->bestPicks($type, $week - 1);
-            $this->mostPicked($type, $week - 1);
+            // $this->weeklyLeaders($type, $week - 1);
+            // $this->teamsWinLoss($type, $week - 1);
+            // $this->teamScores($type, $week - 1);
+            // $this->teamPlayoffScores();
+            // $this->bestPicks($type, $week - 1);
+            // $this->mostPicked($type, $week - 1);
+            if ($type == 'POST') {
+                $this->playoffScores($week - 1);
+            }
         }
     }
 
@@ -399,7 +402,33 @@ class PickemsStats extends Command
 
     private function bestPlayoffPicks()
     {
+        $this->info('Calculating best playoff picks:');
+        $bar = $this->output->createProgressBar(0);
+        $start = microtime(true);
+        $bar->finish();
+        $time = number_format(microtime(true) - $start, 2);
+        $this->info('    '.$time.' seconds');
+    }
 
+    private function playoffScores($week)
+    {
+        $teamPlayoffPicks = TeamPlayoffPick::all();
+
+        $this->info('Calculating playoff scores:');
+        $bar = $this->output->createProgressBar($teamPlayoffPicks->count());
+        $start = microtime(true);
+
+        $points = [];
+        foreach($teamPlayoffPicks as $playoffPick) {
+            $team = $playoffPick->team;
+            $team->playoff_points = $playoffPick->points();
+            $team->save();
+            $bar->advance();
+        }
+
+        $bar->finish();
+        $time = number_format(microtime(true) - $start, 2);
+        $this->info('    '.$time.' seconds');
     }
 
     private function mostPicked($type, $toWeek)

@@ -65,7 +65,7 @@ class PickemsFetch extends Command
         $this->info('    '.$time. ' seconds');
 
         // fetch stats for regular season
-        $toWeek = ($type == 'REG') ? $week - 1 : 17;
+        $toWeek = ($type == 'REG') ? $week - 1 : 18 + $week;
         $start = microtime(true);
         $this->info("Fetching regular season stats to week {$toWeek}:");
         $bar = $this->output->createProgressBar($toWeek);
@@ -83,7 +83,7 @@ class PickemsFetch extends Command
             $toWeek = $week - 1;
             $this->info("Fetching post season stats to week {$toWeek}:");
             $bar = $this->output->createProgressBar($toWeek);
-            foreach(range(1, $toWeek) as $w) {
+            foreach(range(18, 18 + $toWeek) as $w) {
                 $this->fetchWeekStats($w);
                 $bar->advance();
             }

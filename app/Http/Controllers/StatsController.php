@@ -84,4 +84,35 @@ class StatsController extends Controller
 
         return response()->json($data, 200);
     }
+
+    public function playoffRankings()
+    {
+        $data = [
+            'gold' => [],
+            'silver' => [],
+            'bronze' => Team::where('paid', '=', false)
+                ->orderBy('playoff_points', 'desc')
+                ->orderBy('points', 'desc')
+                ->orderBy('wl', 'desc')
+                ->get(),
+        ];
+
+        $paidTeams = Team::where('paid', '=', true)
+            ->orderBy('playoff_points', 'desc')
+            ->orderBy('points', 'desc')
+            ->orderBy('wl', 'desc')
+            ->get();
+
+        $teamsCount = count($paidTeams);
+        $half = ceil(count($paidTeams) / 2);
+        foreach ($paidTeams as $idx => $team) {
+            if ($idx < $half) {
+                $data['gold'][] = $team;
+            } else {
+                $data['silver'][] = $team;
+            }
+        }
+
+        return response()->json($data, 200);
+    }
 }

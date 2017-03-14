@@ -13,7 +13,7 @@ class Team extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id', 'name', 'slug', 'paid', 'points', 'playoffs', 'wl',
+        'user_id', 'name', 'slug', 'paid', 'points', 'playoffs', 'wl', 'playoff_points'
     ];
 
     protected $casts = [

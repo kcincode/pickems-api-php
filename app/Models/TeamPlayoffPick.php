@@ -77,7 +77,7 @@ class TeamPlayoffPick extends Model
         // setup the playmaker ids
         $playmakerIds = explode(',', $this->playmakers);
         // initialize the points with the starting points
-        $points = $this->starting;
+        $points = $this->team->playoffs;
 
         // loop through all of the player ids in the playoffs
         foreach(NflStat::whereIn('player_id', $this->allIds())->where('week', '>', 17)->get() as $nflStat) {
@@ -86,6 +86,34 @@ class TeamPlayoffPick extends Model
 
             // increment the points
             $points += $nflStat->points() * $multiplier;
+        }
+
+        // return the sum
+        return $points;
+    }
+
+    public function pointDetails()
+    {
+        // setup the playmaker ids
+        $playmakerIds = explode(',', $this->playmakers);
+        $points = [];
+
+        // loop through all of the player ids in the playoffs
+        foreach(NflStat::whereIn('player_id', $this->allIds())->where('week', '>', 17)->get() as $nflStat) {
+            // double the multiplier if playmaker
+            $multiplier = (in_array($nflStat->player_id, $playmakerIds)) ? 2 : 1;
+
+            // initialize the data
+            if (!isset($points[$nflStat->player_id])) {
+                $points[$nflStat->player_id] = [
+                    18 => 0,
+                    19 => 0,
+                    20 => 0,
+                    22 => 0,
+                ];
+            }
+
+            $points[$nflStat->player_id][$nflStat->week] = $nflStat->points() * $multiplier;
         }
 
         // return the sum
