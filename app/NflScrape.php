@@ -238,7 +238,7 @@ class NflScrape
 
                     $position = $this->convertPosition($matches[4]);
 
-                    if (in_array($position, ['QB', 'RB', 'WRTE', 'K'])) {
+                    if (in_array($position, ['QB', 'RB', 'WRTE', 'K']) && $gsis_id) {
                         $players[] = [
                             'team_id' => $nflTeam->abbr,
                             'name' => $matches[3].' '.$matches[2],
